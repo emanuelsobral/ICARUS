@@ -50,14 +50,33 @@
         <p class="max-w-lg text-sm sm:text-base">Parabéns, Agente. Sua avaliação foi satisfatória e você foi
             oficialmente integrado à ICARUS.
             Seu ID foi registrado em nosso sistema.</p>
-        <p class="max-w-lg mt-2 text-sm sm:text-base">Para concluir seu dossiê, por favor, insira seu nome de registro
+        <p class="max-w-lg mt-2 text-sm sm:text-base">Para concluir seu dossiê, por favor, preencha os dados de registro
             abaixo.</p>
-        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
-            <label for="agent-name-input" class="text-xs sm:text-sm sm:mr-2">&gt; NOME DE REGISTRO:</label>
-            <div class="flex items-center">
-                <span class="w-2 h-5 bg-green-400 cursor ml-1"></span>
-                <input id="agent-name-input" type="text"
-                    class="bg-transparent border-none focus:ring-0 w-48 text-center sm:text-left text-sm">
+        
+        <div class="mt-8 space-y-4 w-full max-w-md">
+            <div class="flex flex-col items-center gap-2">
+                <label for="agent-name-input" class="text-xs sm:text-sm">&gt; NOME DO AGENTE:</label>
+                <div class="flex items-center w-full justify-center">
+                    <span class="w-2 h-5 bg-green-400 cursor ml-1"></span>
+                    <input id="agent-name-input" type="text" placeholder="Nome do personagem/agente"
+                        class="bg-transparent border-none focus:ring-0 w-48 text-center text-sm">
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center gap-2">
+                <label for="player-name-input" class="text-xs sm:text-sm">&gt; NOME DO JOGADOR:</label>
+                <div class="flex items-center w-full justify-center">
+                    <span class="w-2 h-5 bg-blue-400 cursor ml-1"></span>
+                    <input id="player-name-input" type="text" placeholder="Seu nome real"
+                        class="bg-transparent border-none focus:ring-0 w-48 text-center text-sm">
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button id="complete-registration-btn" 
+                    class="btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md border-2 border-green-400 shadow-lg transition-all duration-200">
+                    CONCLUIR REGISTRO
+                </button>
             </div>
         </div>
     </div>
@@ -126,7 +145,7 @@
                     maxlength="50">
             </div>
 
-            <div class="mb-6">
+            <div class="mb-4">
                 <label for="item-category-select" class="block text-sm font-bold mb-2">Categoria:</label>
                 <select id="item-category-select" class="modal-select">
                     <option value="">-- Selecione uma categoria --</option>
@@ -140,9 +159,81 @@
                 </select>
             </div>
 
+            <div class="mb-4">
+                <label for="item-level-input" class="block text-sm font-bold mb-2">Nível:</label>
+                <input type="number" id="item-level-input" class="modal-input" placeholder="1" min="1" max="20" value="1">
+            </div>
+
+            <div class="mb-4">
+                <label for="item-info-input" class="block text-sm font-bold mb-2">Informações:</label>
+                <textarea id="item-info-input" class="modal-input h-20" placeholder="Descrição do item..."></textarea>
+            </div>
+
+            <div id="item-special-fields" class="mb-4 hidden">
+                <div id="weapon-damage-field" class="mb-3 hidden">
+                    <label for="item-damage-input" class="block text-sm font-bold mb-2">Dano (apenas para armas):</label>
+                    <input type="text" id="item-damage-input" class="modal-input" placeholder="1d6" value="1d6">
+                </div>
+                <div id="armor-ac-field" class="mb-3 hidden">
+                    <label for="item-ac-input" class="block text-sm font-bold mb-2">CA (apenas para proteção):</label>
+                    <input type="text" id="item-ac-input" class="modal-input" placeholder="+1" value="+1">
+                </div>
+            </div>
+
             <div class="flex justify-end">
                 <button id="modal-cancel-btn" class="modal-btn cancel">Cancelar</button>
                 <button id="modal-add-btn" class="modal-btn">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar habilidade/magia -->
+    <div id="add-ability-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold terminal-text-blue mb-4">ADICIONAR HABILIDADE OU MAGIA</h3>
+
+            <div class="mb-4">
+                <label for="ability-name-input" class="block text-sm font-bold mb-2">Nome da Habilidade/Magia:</label>
+                <input type="text" id="ability-name-input" class="modal-input" placeholder="Digite o nome..." maxlength="50">
+            </div>
+
+            <div class="mb-4">
+                <label for="ability-category-select" class="block text-sm font-bold mb-2">Categoria:</label>
+                <select id="ability-category-select" class="modal-select">
+                    <option value="">-- Selecione uma categoria --</option>
+                    <option value="habilidades">HABILIDADES</option>
+                    <option value="magias">MAGIAS</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="ability-level-input" class="block text-sm font-bold mb-2">Nível:</label>
+                <input type="number" id="ability-level-input" class="modal-input" placeholder="1" min="1" max="20" value="1">
+            </div>
+
+            <div class="mb-4">
+                <label for="ability-info-input" class="block text-sm font-bold mb-2">Informações:</label>
+                <textarea id="ability-info-input" class="modal-input h-20" placeholder="Descrição da habilidade/magia..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div>
+                    <label for="ability-hp-cost" class="block text-sm font-bold mb-2">Custo HP:</label>
+                    <input type="number" id="ability-hp-cost" class="modal-input" placeholder="0" min="0" value="0">
+                </div>
+                <div>
+                    <label for="ability-mp-cost" class="block text-sm font-bold mb-2">Custo MP:</label>
+                    <input type="number" id="ability-mp-cost" class="modal-input" placeholder="0" min="0" value="0">
+                </div>
+                <div>
+                    <label for="ability-san-cost" class="block text-sm font-bold mb-2">Custo SAN:</label>
+                    <input type="number" id="ability-san-cost" class="modal-input" placeholder="0" min="0" value="0">
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button id="ability-modal-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="ability-modal-add-btn" class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">Adicionar</button>
             </div>
         </div>
     </div>

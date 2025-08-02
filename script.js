@@ -176,10 +176,17 @@
                 const accessLevel = agentData.playerStatus?.accessLevel || 1;
                 const agentId = agentData.id || currentAgentId;
                 const agentName = agentData.name || 'AGENTE';
+                const playerName = agentData.playerName || '';
+
+                // Criar texto com nome do agente e jogador
+                let displayText = agentName.toUpperCase();
+                if (playerName) {
+                    displayText += ` | ${playerName.toUpperCase()}`;
+                }
 
                 // Desktop header
                 if (agentIdDisplay) {
-                    agentIdDisplay.innerHTML = `${agentName.toUpperCase()} <span class="text-xs opacity-80">[ID: ${agentId.toUpperCase()}]</span>`;
+                    agentIdDisplay.innerHTML = `${displayText} <span class="text-xs opacity-80">[ID: ${agentId.toUpperCase()}]</span>`;
                 }
                 if (accessLevelDisplay) {
                     accessLevelDisplay.textContent = getAccessLevelName(accessLevel);
@@ -187,7 +194,7 @@
 
                 // Mobile header
                 if (mobileAgentIdDisplay) {
-                    mobileAgentIdDisplay.innerHTML = `${agentName.toUpperCase()} <span class="text-xs opacity-80">[ID: ${agentId.toUpperCase()}]</span>`;
+                    mobileAgentIdDisplay.innerHTML = `${displayText} <span class="text-xs opacity-80">[ID: ${agentId.toUpperCase()}]</span>`;
                 }
                 if (mobileAccessLevelDisplay) {
                     mobileAccessLevelDisplay.textContent = getAccessLevelName(accessLevel);
@@ -330,6 +337,8 @@
             level: 1, // Nível do personagem
             equipped: { arma: "Nenhum", cabeça: "Nenhum", torso: "Camisa", membros_inferiores: "Calça", pes: "Tenis" },
             inventory: { armas: "", protecao: "", ferramentas: "", recursos: "", artefatos: "", itens: "", reliquias: "" },
+            // Nova seção de Habilidades e Magias
+            abilitiesAndSpells: { habilidades: "", magias: "" },
             // Atributos RPG
             força: 0,
             destreza: 0,
@@ -3618,17 +3627,60 @@
             loginScreen.classList.add('hidden');
             welcomeScreen.classList.remove('hidden');
             const agentNameInput = document.getElementById('agent-name-input');
+            const playerNameInput = document.getElementById('player-name-input');
+            const completeRegistrationBtn = document.getElementById('complete-registration-btn');
+            
             agentNameInput.focus();
-            agentNameInput.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter' && agentNameInput.value.trim() !== "") {
-                    const newAgentData = {
-                        uid: uid,
-                        name: agentNameInput.value.trim(),
-                        playerStatus: defaultPlayerStatus
-                    };
+            
+            // Função para concluir o registro
+            async function completeRegistration() {
+                const agentName = agentNameInput.value.trim();
+                const playerName = playerNameInput.value.trim();
+                
+                if (!agentName) {
+                    alert('Por favor, insira o nome do agente.');
+                    agentNameInput.focus();
+                    return;
+                }
+                
+                if (!playerName) {
+                    alert('Por favor, insira o nome do jogador.');
+                    playerNameInput.focus();
+                    return;
+                }
+                
+                const newAgentData = {
+                    uid: uid,
+                    name: agentName,
+                    playerName: playerName,
+                    playerStatus: defaultPlayerStatus,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
                     const agentRef = doc(db, "agents", agentId);
                     await setDoc(agentRef, newAgentData);
                     await loadAgentData(agentId);
+                } catch (error) {
+                    console.error('Erro ao criar agente:', error);
+                    alert('Erro ao criar agente. Tente novamente.');
+                }
+            }
+            
+            // Event listeners
+            completeRegistrationBtn.addEventListener('click', completeRegistration);
+            
+            agentNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    if (agentNameInput.value.trim()) {
+                        playerNameInput.focus();
+                    }
+                }
+            });
+            
+            playerNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && playerNameInput.value.trim() !== "") {
+                    completeRegistration();
                 }
             });
         }
@@ -4722,6 +4774,7 @@
                             <div class="flex-1">
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                                     <h3 class="font-bold terminal-text-amber text-lg">${agent.name || 'AGENTE SEM NOME'}</h3>
+                                    ${agent.playerName ? `<span class="text-sm terminal-text-cyan">| ${agent.playerName}</span>` : ''}
                                     <span class="text-sm text-gray-400">[ID: ${agent.id}]</span>
                                     <span class="text-xs px-2 py-1 rounded ${statusColor === 'terminal-text-green' ? 'bg-green-900/50 text-green-400' : statusColor === 'terminal-text-yellow' ? 'bg-yellow-900/50 text-yellow-400' : 'bg-red-900/50 text-red-400'}">${statusText}</span>
                                 </div>
@@ -4774,11 +4827,12 @@
                 const filteredAgents = agentsData.filter(agent => {
                     const agentId = agent.id.toLowerCase();
                     const agentName = (agent.name || '').toLowerCase();
+                    const playerName = (agent.playerName || '').toLowerCase();
                     const playerStatus = agent.playerStatus || {};
                     const characterSheet = playerStatus.characterSheet || {};
 
-                    // Buscar em campos básicos
-                    const basicMatch = agentId.includes(term) || agentName.includes(term);
+                    // Buscar em campos básicos (incluindo nome do jogador)
+                    const basicMatch = agentId.includes(term) || agentName.includes(term) || playerName.includes(term);
 
                     // Buscar em atributos da ficha
                     const raceMatch = (characterSheet.raça || '').toLowerCase().includes(term);
@@ -4834,7 +4888,7 @@
                             <div class="mt-4 text-xs text-left max-w-md mx-auto">
                                 <p class="mb-2 font-bold text-gray-400">💡 Dicas de busca:</p>
                                 <ul class="space-y-1 text-gray-500">
-                                    <li>• <strong>ID/Nome:</strong> "agent001", "João"</li>
+                                    <li>• <strong>ID/Nome:</strong> "agent001", "João", "Nome do Jogador"</li>
                                     <li>• <strong>Raça/Classe:</strong> "humano", "investigador"</li>
                                     <li>• <strong>Status:</strong> "crítico", "15/15", "nível 3"</li>
                                     <li>• <strong>Acesso:</strong> "nível 5", "vault"</li>
@@ -5043,6 +5097,7 @@
                         const data = doc.data();
                         const agentId = doc.id.toLowerCase();
                         const agentName = (data.name || '').toLowerCase();
+                        const playerName = (data.playerName || '').toLowerCase();
                         const playerStatus = data.playerStatus || {};
                         const characterSheet = playerStatus.characterSheet || {};
 
@@ -5050,7 +5105,7 @@
                         let matched = false;
                         let matchType = '';
 
-                        if (agentId.includes(term) || agentName.includes(term)) {
+                        if (agentId.includes(term) || agentName.includes(term) || playerName.includes(term)) {
                             matched = true;
                             matchType = 'Nome/ID';
                         }
@@ -5108,10 +5163,16 @@
                         }
 
                         if (matched) {
+                            // Criar display com nome do agente e jogador
+                            let displayName = data.name || doc.id;
+                            if (data.playerName) {
+                                displayName += ` | ${data.playerName}`;
+                            }
+
                             matches.push({
                                 type: 'agent',
                                 id: doc.id,
-                                name: data.name || doc.id,
+                                name: displayName,
                                 level: playerStatus.level || 1,
                                 accessLevel: playerStatus.accessLevel || 1,
                                 status: playerStatus.hp || '15/15',
@@ -5843,25 +5904,103 @@
                 recursos: "Recursos Gerais", artefatos: "Artefatos", itens: "Itens", reliquias: "Relíquias"
             };
 
-            let inventoryHtml = '';
-            for (const key in inventoryCategories) {
-                const items = (status.inventory[key] || "").split('<br>').map(item => item.trim()).filter(item => item && item !== 'Nenhum');
-                let itemsHtml = items.map(item => `
-                    <div class="inventory-item p-1 relative group cursor-pointer hover:bg-green-900/30 border border-gray-600 rounded transition-colors" data-item-category="${key}" data-item-name="${item}">
-                        <span class="inventory-item-text">${item}</span>
-                    </div>
-                `).join('');
-                if (items.length === 0) itemsHtml = `<div class="p-1 text-gray-500 italic">Vazio</div>`;
+            // Dividir inventário em duas partes
+            const inventoryPart1 = { armas: "ARMAS", protecao: "Proteção e Defesa", ferramentas: "Ferramentas" };
+            const inventoryPart2 = { recursos: "Recursos Gerais", artefatos: "Artefatos", itens: "Itens", reliquias: "Relíquias" };
 
-                inventoryHtml += `
+            // Função para renderizar seção de inventário
+            function renderInventorySection(categories, sectionId, title) {
+                let sectionHtml = '';
+                for (const key in categories) {
+                    const items = (status.inventory[key] || "").split('<br>').map(item => item.trim()).filter(item => item && item !== 'Nenhum');
+                    let itemsHtml = items.map(item => {
+                        // Parse dos dados do item: nome|||level|||info|||extra|||
+                        const parts = item.split('|||');
+                        const name = parts[0] || item;
+                        const level = parts[1] || '1';
+                        const info = parts[2] || 'Sem informações';
+                        const extra = parts[3] || '';
+
+                        let extraDisplay = '';
+                        if (key === 'armas' && extra) {
+                            extraDisplay = ` | <span class="item-damage">Dano: ${extra}</span>`;
+                        } else if (key === 'protecao' && extra) {
+                            extraDisplay = ` | <span class="item-ac">CA: ${extra}</span>`;
+                        }
+
+                        return `
+                            <div class="inventory-item p-2 relative group cursor-pointer hover:bg-green-900/30 border border-gray-600 rounded transition-colors mb-1" 
+                                 data-item-category="${key}" data-item-name="${name}">
+                                <div class="inventory-item-text font-medium">${name}</div>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    <span class="item-level">Nv. ${level}</span> | 
+                                    <span class="item-info">${info}</span>${extraDisplay}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    if (items.length === 0) itemsHtml = `<div class="p-2 text-gray-500 italic">Vazio</div>`;
+
+                    sectionHtml += `
+                        <details class="mb-2" open>
+                            <summary class="font-bold text-base cursor-pointer hover:text-amber-400 transition-colors">${categories[key]}</summary>
+                            <div class="p-2 bg-black/20 border border-dashed border-green-900 mt-1 min-h-[40px]" data-inventory-category="${key}">
+                                ${itemsHtml}
+                            </div>
+                        </details>
+                    `;
+                }
+                return `
+                    <details class="mb-4 border border-amber-400/30 rounded p-2" open>
+                        <summary class="font-bold text-lg cursor-pointer hover:text-amber-400 transition-colors">${title}</summary>
+                        <div class="mt-2" id="${sectionId}">
+                            ${sectionHtml}
+                        </div>
+                    </details>
+                `;
+            }
+
+            // Seção de Habilidades e Magias
+            const abilitiesCategories = { habilidades: "HABILIDADES", magias: "MAGIAS" };
+            let abilitiesHtml = '';
+            
+            for (const key in abilitiesCategories) {
+                const items = (status.abilitiesAndSpells?.[key] || "").split('<br>').map(item => item.trim()).filter(item => item && item !== 'Nenhum');
+                let itemsHtml = items.map(item => {
+                    // Parse dos dados da habilidade: nome|||level|||info|||hp|||mp|||san
+                    const parts = item.split('|||');
+                    const name = parts[0] || item;
+                    const level = parts[1] || '1';
+                    const info = parts[2] || 'Sem informações';
+                    const hpCost = parts[3] || '0';
+                    const mpCost = parts[4] || '0';
+                    const sanCost = parts[5] || '0';
+
+                    return `
+                        <div class="ability-item p-2 relative group cursor-pointer hover:bg-blue-900/30 border border-gray-600 rounded transition-colors mb-1" 
+                             data-ability-category="${key}" data-ability-name="${name}">
+                            <div class="ability-item-text font-medium">${name}</div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                <span class="ability-level">Nv. ${level}</span> | 
+                                <span class="ability-info">${info}</span> | 
+                                <span class="ability-cost">Custo: HP ${hpCost} / MP ${mpCost} / SAN ${sanCost}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                if (items.length === 0) itemsHtml = `<div class="p-2 text-gray-500 italic">Vazio</div>`;
+
+                abilitiesHtml += `
                     <details class="mb-2" open>
-                        <summary class="font-bold text-base">${inventoryCategories[key]}</summary>
-                        <div class="p-2 bg-black/20 border border-dashed border-green-900 mt-1 min-h-[40px]" data-inventory-category="${key}">
+                        <summary class="font-bold text-base cursor-pointer hover:text-blue-400 transition-colors">${abilitiesCategories[key]}</summary>
+                        <div class="p-2 bg-black/20 border border-dashed border-blue-900 mt-1 min-h-[40px]" data-ability-category="${key}">
                             ${itemsHtml}
                         </div>
                     </details>
                 `;
-            }            // Obter valores dos atributos (usar 0 como padrão se não existir)
+            }
+
+            // Obter valores dos atributos (usar 0 como padrão se não existir)
             const força = status.força || 0;
             const destreza = status.destreza || 0;
             const constituição = status.constituição || 0;
@@ -6096,9 +6235,19 @@
                         </div>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold mb-2">INVENTÁRIO</h2>
-                        <div id="inventory-container">${inventoryHtml}</div>
+                        <!-- INVENTÁRIO DIVIDIDO EM DUAS PARTES -->
+                        ${renderInventorySection(inventoryPart1, 'inventory-section-1', 'INVENTÁRIO - PARTE 1')}
+                        ${renderInventorySection(inventoryPart2, 'inventory-section-2', 'INVENTÁRIO - PARTE 2')}
                         <button id="add-inventory-item-btn" class="btn mt-3 mb-4 w-full bg-green-600 hover:bg-green-700 text-black font-bold py-2 px-4 rounded-md border-2 border-green-400 shadow-lg transition-all duration-200">[+] Adicionar Item ao Inventário</button>
+                        
+                        <!-- SEÇÃO DE HABILIDADES E MAGIAS -->
+                        <details class="mb-4 border border-blue-400/30 rounded p-2" open>
+                            <summary class="font-bold text-lg cursor-pointer hover:text-blue-400 transition-colors">HABILIDADES E MAGIAS</summary>
+                            <div class="mt-2" id="abilities-container">
+                                ${abilitiesHtml}
+                            </div>
+                            <button id="add-ability-item-btn" class="btn mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md border-2 border-blue-400 shadow-lg transition-all duration-200">[+] Adicionar Habilidade/Magia</button>
+                        </details>
                     </div>
                 </div>
             `;
@@ -6132,6 +6281,31 @@
 
         function closeAddItemModal() {
             const modal = document.getElementById('add-item-modal');
+            modal.classList.add('hidden');
+        }
+
+        // --- ADD ABILITY MODAL FUNCTIONS ---
+        function openAddAbilityModal() {
+            const modal = document.getElementById('add-ability-modal');
+            const abilityNameInput = document.getElementById('ability-name-input');
+            const abilityCategorySelect = document.getElementById('ability-category-select');
+
+            // Limpar campos
+            abilityNameInput.value = '';
+            abilityCategorySelect.value = '';
+            document.getElementById('ability-level-input').value = '1';
+            document.getElementById('ability-info-input').value = '';
+            document.getElementById('ability-hp-cost').value = '0';
+            document.getElementById('ability-mp-cost').value = '0';
+            document.getElementById('ability-san-cost').value = '0';
+
+            // Mostrar modal
+            modal.classList.remove('hidden');
+            abilityNameInput.focus();
+        }
+
+        function closeAddAbilityModal() {
+            const modal = document.getElementById('add-ability-modal');
             modal.classList.add('hidden');
         }
 
@@ -7491,9 +7665,15 @@
         async function addItemFromModal() {
             const itemNameInput = document.getElementById('item-name-input');
             const categorySelect = document.getElementById('item-category-select');
+            const levelInput = document.getElementById('item-level-input');
+            const infoInput = document.getElementById('item-info-input');
+            const damageInput = document.getElementById('item-damage-input');
+            const acInput = document.getElementById('item-ac-input');
 
             const itemName = itemNameInput.value.trim();
             const category = categorySelect.value;
+            const level = levelInput.value || '1';
+            const info = infoInput.value.trim() || 'Sem informações';
 
             if (!itemName) {
                 alert('Por favor, digite o nome do item.');
@@ -7506,6 +7686,17 @@
                 categorySelect.focus();
                 return;
             }
+
+            // Obter dados adicionais específicos da categoria
+            let extraData = '';
+            if (category === 'armas' && damageInput.value.trim()) {
+                extraData = damageInput.value.trim();
+            } else if (category === 'protecao' && acInput.value.trim()) {
+                extraData = acInput.value.trim();
+            }
+
+            // Formar string com formato: nome|||level|||info|||extra
+            const itemData = `${itemName}|||${level}|||${info}|||${extraData}`;
 
             // Obter agentId
             let agentId;
@@ -7536,9 +7727,9 @@
 
                 // Atualizar inventário
                 if (currentItems && currentItems.trim() !== "" && currentItems !== 'Nenhum') {
-                    currentStatus.inventory[category] += `<br>${itemName}`;
+                    currentStatus.inventory[category] += `<br>${itemData}`;
                 } else {
-                    currentStatus.inventory[category] = itemName;
+                    currentStatus.inventory[category] = itemData;
                 }
 
                 await updateFirebase(agentId, 'playerStatus', currentStatus);
@@ -7550,6 +7741,90 @@
             } catch (error) {
                 console.error("Erro ao adicionar item:", error);
                 alert("Erro ao adicionar item ao inventário. Tente novamente.");
+            }
+        }
+
+        async function addAbilityFromModal() {
+            const abilityNameInput = document.getElementById('ability-name-input');
+            const categorySelect = document.getElementById('ability-category-select');
+            const levelInput = document.getElementById('ability-level-input');
+            const infoInput = document.getElementById('ability-info-input');
+            const hpCostInput = document.getElementById('ability-hp-cost');
+            const mpCostInput = document.getElementById('ability-mp-cost');
+            const sanCostInput = document.getElementById('ability-san-cost');
+
+            const abilityName = abilityNameInput.value.trim();
+            const category = categorySelect.value;
+            const level = levelInput.value || '1';
+            const info = infoInput.value.trim() || 'Sem informações';
+            const hpCost = hpCostInput.value || '0';
+            const mpCost = mpCostInput.value || '0';
+            const sanCost = sanCostInput.value || '0';
+
+            if (!abilityName) {
+                alert('Por favor, digite o nome da habilidade/magia.');
+                abilityNameInput.focus();
+                return;
+            }
+
+            if (!category) {
+                alert('Por favor, selecione uma categoria.');
+                categorySelect.focus();
+                return;
+            }
+
+            // Formar string com formato: nome|||level|||info|||hp|||mp|||san
+            const abilityData = `${abilityName}|||${level}|||${info}|||${hpCost}|||${mpCost}|||${sanCost}`;
+
+            // Obter agentId
+            let agentId;
+            const playerStatElement = document.querySelector('.player-stat');
+            if (playerStatElement) {
+                agentId = playerStatElement.dataset.agentId;
+            } else {
+                const dropZoneElement = document.querySelector('.drop-zone');
+                if (dropZoneElement) {
+                    agentId = dropZoneElement.dataset.agentId;
+                } else {
+                    alert("Erro: Não foi possível identificar o agente.");
+                    return;
+                }
+            }
+
+            try {
+                const agentRef = doc(db, "agents", agentId);
+                const agentDoc = await getDoc(agentRef);
+
+                if (!agentDoc.exists()) {
+                    alert("Erro: Agente não encontrado no banco de dados.");
+                    return;
+                }
+
+                const currentStatus = agentDoc.data().playerStatus;
+                
+                // Garantir que abilitiesAndSpells existe
+                if (!currentStatus.abilitiesAndSpells) {
+                    currentStatus.abilitiesAndSpells = { habilidades: "", magias: "" };
+                }
+
+                const currentAbilities = currentStatus.abilitiesAndSpells[category];
+
+                // Atualizar habilidades/magias
+                if (currentAbilities && currentAbilities.trim() !== "" && currentAbilities !== 'Nenhum') {
+                    currentStatus.abilitiesAndSpells[category] += `<br>${abilityData}`;
+                } else {
+                    currentStatus.abilitiesAndSpells[category] = abilityData;
+                }
+
+                await updateFirebase(agentId, 'playerStatus', currentStatus);
+
+                // Fechar modal e recarregar view
+                closeAddAbilityModal();
+                loadPlayerStatusView(agentId, currentStatus);
+
+            } catch (error) {
+                console.error("Erro ao adicionar habilidade/magia:", error);
+                alert("Erro ao adicionar habilidade/magia. Tente novamente.");
             }
         }
 
@@ -7677,6 +7952,11 @@
                 // Add item button in status view
                 if (e.target.matches('#add-inventory-item-btn')) {
                     openAddItemModal();
+                }
+
+                // Add ability/spell button in status view
+                if (e.target.matches('#add-ability-item-btn')) {
+                    openAddAbilityModal();
                 }
 
                 // Character sheet buttons
@@ -7966,6 +8246,10 @@
             document.getElementById('modal-cancel-btn').addEventListener('click', closeAddItemModal);
             document.getElementById('modal-add-btn').addEventListener('click', addItemFromModal);
 
+            // Event listeners para o modal de habilidades
+            document.getElementById('ability-modal-cancel-btn').addEventListener('click', closeAddAbilityModal);
+            document.getElementById('ability-modal-add-btn').addEventListener('click', addAbilityFromModal);
+
             // Event listeners para o modal de erro de atributos
             document.getElementById('attribute-error-ok-btn').addEventListener('click', closeAttributeErrorModal);
 
@@ -8107,6 +8391,28 @@
             document.getElementById('item-category-select').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     addItemFromModal();
+                }
+            });
+
+            // Event listener para mostrar/esconder campos específicos no modal de item
+            document.getElementById('item-category-select').addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                const specialFields = document.getElementById('item-special-fields');
+                const weaponField = document.getElementById('weapon-damage-field');
+                const armorField = document.getElementById('armor-ac-field');
+
+                // Esconder todos os campos primeiro
+                specialFields.classList.add('hidden');
+                weaponField.classList.add('hidden');
+                armorField.classList.add('hidden');
+
+                // Mostrar campos específicos baseado na categoria
+                if (selectedCategory === 'armas') {
+                    specialFields.classList.remove('hidden');
+                    weaponField.classList.remove('hidden');
+                } else if (selectedCategory === 'protecao') {
+                    specialFields.classList.remove('hidden');
+                    armorField.classList.remove('hidden');
                 }
             });
 
