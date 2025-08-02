@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL DE ACESSO ICARUS</title>
+    
+    <!-- TailwindCSS e Fontes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Sua Folha de Estilos CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="p-2 sm:p-4">
+
+    <!-- Tela de Login Inicial -->
+    <div id="login-screen" class="h-screen flex flex-col justify-center items-center px-4">
+        <div class="w-full max-w-md text-center">
+            <pre class="whitespace-pre-wrap text-xs sm:text-sm md:text-base">
+ ___   _____   _____   _____   _   _   _____ 
+|_ _| /  ___| /  _  \ |  _  \ | | | | /  ___|
+ | |  | |     | |_| | | |_| | | | | | | |___ 
+ | |  | |     |  _  | |  _  / | |_| |  \__  |
+|___| \_____| |_| |_| |_| \_\  \___/   |___/ 
+            </pre>
+            <p class="mt-4 text-xs sm:text-sm">Institute for Containment and Analysis of Reality-Unbound Subjects</p>
+            <p class="mt-8 terminal-text-red animate-pulse text-xs sm:text-sm">AVISO: ACESSO RESTRITO. ATIVIDADE
+                MONITORADA.</p>
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
+                <label for="agent-id-input" class="text-xs sm:text-sm sm:mr-2">&gt; INSIRA ID DE AGENTE:</label>
+                <div class="flex items-center">
+                    <span class="w-2 h-5 bg-green-400 cursor ml-1"></span>
+                    <input id="agent-id-input" type="password"
+                        class="bg-transparent border-none focus:ring-0 w-32 sm:w-24 text-center sm:text-left text-sm"
+                        autofocus>
+                </div>
+            </div>
+            <p id="login-status" class="mt-4 h-5 text-xs sm:text-sm"></p>
+        </div>
+    </div>
+
+    <!-- Tela de Registro de Novo Agente -->
+    <div id="welcome-screen" class="hidden h-screen flex flex-col justify-center items-center text-center px-4">
+        <h1 class="text-xl sm:text-2xl font-bold terminal-text-amber mb-4">RECRUTAMENTO CONCLUÍDO</h1>
+        <p class="max-w-lg text-sm sm:text-base">Parabéns, Agente. Sua avaliação foi satisfatória e você foi
+            oficialmente integrado à ICARUS.
+            Seu ID foi registrado em nosso sistema.</p>
+        <p class="max-w-lg mt-2 text-sm sm:text-base">Para concluir seu dossiê, por favor, insira seu nome de registro
+            abaixo.</p>
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
+            <label for="agent-name-input" class="text-xs sm:text-sm sm:mr-2">&gt; NOME DE REGISTRO:</label>
+            <div class="flex items-center">
+                <span class="w-2 h-5 bg-green-400 cursor ml-1"></span>
+                <input id="agent-name-input" type="text"
+                    class="bg-transparent border-none focus:ring-0 w-48 text-center sm:text-left text-sm">
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Conteúdo Principal do Site -->
+    <div id="main-content" class="hidden">
+        <header class="terminal-border p-3 mb-4 flex justify-between items-center text-xs sm:text-sm mobile-header">
+            <div class="text-left">
+                <div class="font-bold terminal-text-green">TERMINAL ICARUS v4.5</div>
+                <div class="text-xs opacity-80">STATUS: CONECTADO</div>
+            </div>
+            <div id="agent-info" class="text-center hidden sm:block flex-1 mx-4 min-w-0">
+                <div class="font-bold terminal-text-amber text-sm leading-tight" id="agent-id-display"></div>
+                <div id="access-level-display" class="text-xs mt-1 opacity-90"></div>
+            </div>
+            <div class="flex items-center justify-center">
+                <button id="logout-btn"
+                    class="terminal-text-red hover:bg-red-900/30 px-3 py-2 rounded border border-red-500 text-xs transition-all duration-200 font-bold">[DESCONECTAR]</button>
+            </div>
+        </header>
+
+        <!-- Mobile Agent Info (shown on mobile when header agent info is hidden) -->
+        <div id="mobile-agent-info" class="block sm:hidden terminal-border p-3 mb-4 text-center text-xs">
+            <div class="font-bold terminal-text-amber text-sm leading-tight" id="mobile-agent-id-display"></div>
+            <div id="mobile-access-level-display" class="text-xs mt-1 opacity-80"></div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4">
+            <!-- Mobile Navigation Toggle -->
+            <button id="mobile-nav-toggle" class="mobile-nav-toggle md:hidden">
+                📁 ABRIR DIRETÓRIOS
+            </button>
+
+            <!-- Mobile Sidebar Backdrop -->
+            <div id="mobile-sidebar-backdrop" class="mobile-sidebar-backdrop"></div>
+
+            <!-- Sidebar/Navigation -->
+            <aside id="main-sidebar"
+                class="mobile-sidebar md:mobile-sidebar md:w-1/4 lg:w-1/5 md:terminal-border md:p-4 md:h-full md:flex md:flex-col">
+                <button id="mobile-close-btn" class="mobile-close-btn md:hidden">✕</button>
+                <h2 class="text-lg font-bold border-b border-green-400 pb-2 mb-4">DIRETÓRIOS</h2>
+                <nav id="main-nav" class="flex-grow">
+                    <!-- Navegação gerada dinamicamente -->
+                </nav>
+                <div id="context-sidebar">
+                    <!-- Sidebar contextual (Missão ou Painel Mestre) -->
+                </div>
+            </aside>
+
+            <main id="content-area"
+                class="mobile-content md:w-3/4 lg:w-4/5 md:terminal-border md:p-4 md:h-[75vh] md:overflow-y-auto">
+                <!-- Conteúdo principal -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar item -->
+    <div id="add-item-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold terminal-text-amber mb-4">ADICIONAR ITEM AO INVENTÁRIO</h3>
+
+            <div class="mb-4">
+                <label for="item-name-input" class="block text-sm font-bold mb-2">Nome do Item:</label>
+                <input type="text" id="item-name-input" class="modal-input" placeholder="Digite o nome do item..."
+                    maxlength="50">
+            </div>
+
+            <div class="mb-6">
+                <label for="item-category-select" class="block text-sm font-bold mb-2">Categoria:</label>
+                <select id="item-category-select" class="modal-select">
+                    <option value="">-- Selecione uma categoria --</option>
+                    <option value="armas">ARMAS</option>
+                    <option value="protecao">Proteção e Defesa</option>
+                    <option value="ferramentas">Ferramentas</option>
+                    <option value="recursos">Recursos Gerais</option>
+                    <option value="artefatos">Artefatos</option>
+                    <option value="itens">Itens</option>
+                    <option value="reliquias">Relíquias</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end">
+                <button id="modal-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="modal-add-btn" class="modal-btn">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar logout -->
+    <div id="logout-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold terminal-text-red mb-4">⚠️ CONFIRMAR DESCONEXÃO</h3>
+
+            <div class="mb-6">
+                <p class="mb-3">Tem certeza que deseja desconectar do terminal ICARUS?</p>
+                <div class="terminal-border p-3 bg-red-900/20">
+                    <p class="text-sm terminal-text-red">
+                        <strong>AVISO:</strong> Todas as sessões ativas serão encerradas e você precisará inserir
+                        novamente as credenciais de acesso para seções protegidas.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="logout-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="logout-confirm-btn"
+                    class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Desconectar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar exclusão de seção -->
+    <div id="delete-section-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold terminal-text-red mb-4">🗑️ CONFIRMAR EXCLUSÃO</h3>
+
+            <div class="mb-6">
+                <p class="mb-3">Tem certeza que deseja excluir a seção:</p>
+                <div class="terminal-border p-3 bg-red-900/20">
+                    <p class="text-lg font-bold terminal-text-amber" id="delete-section-name"></p>
+                </div>
+                <div class="mt-3">
+                    <p class="text-sm terminal-text-red">
+                        <strong>⚠️ ATENÇÃO:</strong> Esta ação não pode ser desfeita. A seção será permanentemente
+                        removida do sistema.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="delete-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="delete-confirm-btn" class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Excluir
+                    Seção</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para alterar nível de acesso -->
+    <div id="change-access-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold terminal-text-amber mb-4">🔐 ALTERAR NÍVEL DE ACESSO</h3>
+
+            <div class="mb-4">
+                <p class="mb-2">Agente: <strong id="change-access-agent-id" class="terminal-text-green"></strong></p>
+                <p class="mb-2">Nível atual: <strong id="change-access-current-level"
+                        class="terminal-text-blue"></strong></p>
+            </div>
+
+            <div class="mb-6">
+                <label for="new-access-level" class="block text-sm font-bold mb-2">Novo Nível de Acesso:</label>
+                <select id="new-access-level" class="modal-select">
+                    <option value="0">Nível 0 [CIVIS] - Não autorizado</option>
+                    <option value="1">Nível 1 [VÉU] - Recrutas</option>
+                    <option value="2">Nível 2 [SOMBRA] - Iniciantes</option>
+                    <option value="3">Nível 3 [ECLOSO] - Formados</option>
+                    <option value="4">Nível 4 [NECRÓPOLIS] - Supervisores</option>
+                    <option value="5">Nível 5 [VAULT] - Acesso crítico</option>
+                    <option value="6">Nível 6 [SEPULCRO] - Especialistas</option>
+                    <option value="7">Nível 7 [CÁLICE] - Alto comando</option>
+                    <option value="8">Nível 8 [TÉMPEL] - Guardiões</option>
+                    <option value="9">Nível 9 [LIMINAR] - Executores supremos</option>
+                    <option value="10">Nível 10 [ÓRBITA] - Diretores cósmicos</option>
+                </select>
+            </div>
+
+            <div class="terminal-border p-3 bg-amber-900/20 mb-4">
+                <p class="text-sm terminal-text-amber">
+                    <strong>⚠️ ATENÇÃO:</strong> Esta alteração será aplicada imediatamente e afetará o acesso do agente
+                    a todas as seções classificadas.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="change-access-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="change-access-confirm-btn"
+                    class="modal-btn bg-amber-600 hover:bg-amber-700 border-amber-500">Alterar Acesso</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para equipar item -->
+    <div id="equip-item-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-xl font-bold terminal-text-green mb-4">⚔️ EQUIPAR ITEM</h3>
+
+            <div id="equip-item-content" class="mb-6">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="equip-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="equip-confirm-btn"
+                    class="modal-btn bg-green-600 hover:bg-green-700 border-green-500">Equipar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de sucesso -->
+    <div id="success-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <div class="text-center">
+                <div class="text-6xl mb-4">✅</div>
+                <h3 class="text-xl font-bold terminal-text-green mb-4" id="success-title">OPERAÇÃO CONCLUÍDA</h3>
+                <p class="text-gray-300 mb-6" id="success-message">Ação executada com sucesso!</p>
+                <button id="success-ok-btn"
+                    class="modal-btn bg-green-600 hover:bg-green-700 border-green-500 w-full">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ações rápidas do player -->
+    <div id="player-quick-actions-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold terminal-text-blue">AÇÕES RÁPIDAS</h2>
+                <button id="player-actions-close-x" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+
+            <div id="player-quick-actions-content">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button id="player-actions-cancel" class="modal-btn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de reset -->
+    <div id="reset-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-xl font-bold terminal-text-red mb-4">⚠️ CONFIRMAR RESET DA FICHA</h3>
+
+            <div class="mb-6">
+                <p class="mb-3">Tem certeza que deseja resetar toda a ficha do personagem?</p>
+                <div class="terminal-border p-3 bg-red-900/20">
+                    <p class="text-sm terminal-text-red mb-2">
+                        <strong>⚠️ ATENÇÃO:</strong> Esta ação irá:
+                    </p>
+                    <ul class="text-sm text-gray-300 list-disc list-inside space-y-1">
+                        <li>Apagar toda a história do personagem</li>
+                        <li>Remover a foto atual</li>
+                        <li>Resetar raça e classe selecionadas</li>
+                        <li>Limpar todos os traços positivos e negativos</li>
+                        <li>Remover conhecimentos e habilidades</li>
+                        <li>Restaurar pontos disponíveis para o valor padrão</li>
+                    </ul>
+                    <p class="text-sm terminal-text-red mt-3">
+                        <strong>Esta ação não pode ser desfeita.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="reset-cancel-btn" class="modal-btn cancel">Cancelar</button>
+                <button id="reset-confirm-btn" class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Resetar
+                    Ficha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de comunicados - Sucesso -->
+    <div id="posts-success-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-lg font-bold terminal-text-green mb-4">✅ SUCESSO</h3>
+            <p id="posts-success-message" class="mb-6"></p>
+            <div class="flex justify-center">
+                <button id="posts-success-ok-btn" class="modal-btn bg-green-600 hover:bg-green-700">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de comunicados - Erro -->
+    <div id="posts-error-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-lg font-bold terminal-text-red mb-4">❌ ERRO</h3>
+            <p id="posts-error-message" class="mb-6"></p>
+            <div class="flex justify-center">
+                <button id="posts-error-ok-btn" class="modal-btn bg-red-600 hover:bg-red-700">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de erro de atributos -->
+    <div id="attribute-error-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-lg font-bold terminal-text-red mb-4">⚠️ ERRO - ATRIBUTO DUPLICADO</h3>
+            <p id="attribute-error-message" class="mb-6 text-center"></p>
+            <div class="flex justify-center">
+                <button id="attribute-error-ok-btn" class="modal-btn bg-red-600 hover:bg-red-700">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de subida de nível -->
+    <div id="level-up-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-lg">
+            <h3 class="text-xl font-bold terminal-text-green mb-4">🎉 SUBIDA DE NÍVEL! 🎉</h3>
+            <div id="level-up-content" class="mb-6 space-y-3">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+            <div class="flex justify-center">
+                <button id="level-up-ok-btn" class="modal-btn bg-green-600 hover:bg-green-700">Incrível!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de comunicados - Confirmação -->
+    <div id="posts-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-lg font-bold terminal-text-amber mb-4">⚠️ CONFIRMAÇÃO</h3>
+            <p id="posts-confirm-message" class="mb-6"></p>
+            <div class="flex gap-3">
+                <button id="posts-confirm-cancel-btn" class="modal-btn bg-gray-600 hover:bg-gray-700">Cancelar</button>
+                <button id="posts-confirm-ok-btn" class="modal-btn bg-amber-600 hover:bg-amber-700">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,731 @@
+/* Estilo base inspirado em terminais CRT antigos */
+        body {
+            font-family: 'Fira+Code', monospace;
+            background-color: #0c0c0c;
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+            overflow-x: hidden;
+        }
+
+        /* Efeito de scanlines para dar a sensação de monitor antigo */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Animação de cursor piscando */
+        .cursor {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+
+            from,
+            to {
+                background-color: transparent;
+            }
+
+            50% {
+                background-color: #00ff41;
+            }
+        }
+
+        /* Estilos para elementos de UI */
+        .terminal-border {
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 10px #00ff41 inset;
+        }
+
+        .terminal-text-red {
+            color: #ff4141;
+            text-shadow: 0 0 5px #ff4141;
+        }
+
+        .terminal-text-amber {
+            color: #ffb000;
+            text-shadow: 0 0 5px #ffb000;
+        }
+
+        /* Classes para cores vívidas - sobrescrevem o text-shadow global */
+        .text-red-400 {
+            color: red !important;
+            text-shadow: 0 0 8px red, 0 0 15px red !important;
+        }
+
+        .text-yellow-400 {
+            color: #facc15 !important;
+            text-shadow: 0 0 8px #facc15, 0 0 15px #facc15 !important;
+        }
+
+        .terminal-text-green {
+            color: #22c55e;
+            text-shadow: 0 0 5px #22c55e;
+        }
+
+        .terminal-text-blue {
+            color: #3b82f6;
+            text-shadow: 0 0 5px #3b82f6;
+        }
+
+        /* Classes para níveis de acesso - cores específicas por hierarquia */
+        .access-level-0 {
+            color: #6b7280 !important;
+            text-shadow: 0 0 5px #6b7280 !important;
+        }
+
+        /* Cinza - CIVIS */
+        .access-level-1 {
+            color: #22c55e !important;
+            text-shadow: 0 0 5px #22c55e !important;
+        }
+
+        /* Verde - VÉU */
+        .access-level-2 {
+            color: #16a34a !important;
+            text-shadow: 0 0 5px #16a34a !important;
+        }
+
+        /* Verde escuro - SOMBRA */
+        .access-level-3 {
+            color: #15803d !important;
+            text-shadow: 0 0 5px #15803d !important;
+        }
+
+        /* Verde mais escuro - ECLOSO */
+        .access-level-4 {
+            color: #eab308 !important;
+            text-shadow: 0 0 5px #eab308 !important;
+        }
+
+        /* Amarelo - NECRÓPOLIS */
+        .access-level-5 {
+            color: #f59e0b !important;
+            text-shadow: 0 0 8px #f59e0b !important;
+        }
+
+        /* Laranja - VAULT */
+        .access-level-6 {
+            color: #d97706 !important;
+            text-shadow: 0 0 8px #d97706 !important;
+        }
+
+        /* Laranja escuro - SEPULCRO */
+        .access-level-7 {
+            color: #dc2626 !important;
+            text-shadow: 0 0 8px #dc2626 !important;
+        }
+
+        /* Vermelho - CÁLICE */
+        .access-level-8 {
+            color: #b91c1c !important;
+            text-shadow: 0 0 10px #b91c1c !important;
+        }
+
+        /* Vermelho escuro - TÉMPEL */
+        .access-level-9 {
+            color: #7c2d12 !important;
+            text-shadow: 0 0 10px #7c2d12 !important;
+        }
+
+        /* Vermelho muito escuro - LIMINAR */
+        .access-level-10 {
+            color: #8b5cf6 !important;
+            text-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6 !important;
+        }
+
+        /* Roxo brilhante - ÓRBITA */
+
+        .btn {
+            background-color: #00ff41;
+            color: #0c0c0c;
+            text-shadow: none;
+            padding: 4px 8px;
+            border: 1px solid #00ff41;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #33ff6a;
+        }
+
+        [contenteditable] {
+            outline: none;
+        }
+
+        [contenteditable]:focus {
+            background-color: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+        }
+
+        /* Drag and Drop styles */
+        .draggable-item {
+            cursor: grab;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+
+        .drop-zone {
+            border: 2px dashed #005a17;
+            min-height: 28px;
+            transition: background-color 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            background-color: rgba(0, 255, 65, 0.2);
+        }
+
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0c0c0c;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            box-shadow: 0 0 5px #00ff41;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #33ff6a;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #0c0c0c;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 20px #00ff41;
+        }
+
+        .modal-input {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            box-shadow: 0 0 5px #00ff41;
+        }
+
+        .modal-select {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .modal-select option {
+            background-color: #1a1a1a;
+            color: #00ff41;
+        }
+
+        /* Styling for attribute dropdowns */
+        .player-stat-select {
+            background-color: #1a1a1a !important;
+            border: 1px solid #00ff41 !important;
+            color: #ffb000 !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+            font-family: 'Fira Code', monospace !important;
+            font-size: 0.875rem !important;
+            text-shadow: 0 0 3px #ffb000 !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.3) !important;
+        }
+
+        .player-stat-select:focus {
+            outline: none !important;
+            border-color: #ffb000 !important;
+            box-shadow: 0 0 8px rgba(255, 176, 0, 0.5) !important;
+            background-color: #2a2a2a !important;
+        }
+
+        .player-stat-select:hover {
+            border-color: #ffb000 !important;
+            box-shadow: 0 0 8px rgba(255, 176, 0, 0.4) !important;
+            background-color: #252525 !important;
+        }
+
+        .player-stat-select option {
+            background-color: #1a1a1a !important;
+            color: #ffb000 !important;
+            padding: 4px 8px !important;
+            font-family: 'Fira Code', monospace !important;
+        }
+
+        .player-stat-select option:hover {
+            background-color: #2a2a2a !important;
+        }
+
+        .player-stat-select option:checked {
+            background-color: #00ff41 !important;
+            color: #0c0c0c !important;
+            font-weight: bold !important;
+        }
+
+        .modal-btn {
+            background-color: #00ff41;
+            color: #0c0c0c;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            margin: 0 5px;
+            transition: background-color 0.2s;
+        }
+
+        .modal-btn:hover {
+            background-color: #33ff6a;
+        }
+
+        .modal-btn.cancel {
+            background-color: #666;
+            color: #fff;
+        }
+
+        .modal-btn.cancel:hover {
+            background-color: #888;
+        }
+
+        /* Remove item button */
+        .remove-item-btn {
+            background-color: #ff4141;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .remove-item-btn:hover {
+            background-color: #ff6666;
+        }
+
+        .equipped-item-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .inventory-item {
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+
+        .inventory-item:hover {
+            background-color: rgba(34, 197, 94, 0.2) !important;
+        }
+
+        .inventory-item-text {
+            display: block;
+            width: 100%;
+        }
+
+        .drop-zone:hover {
+            background-color: rgba(34, 197, 94, 0.2) !important;
+        }
+
+        /* Force modal visibility */
+        .modal-hidden {
+            display: none !important;
+        }
+
+        .modal-visible {
+            display: flex !important;
+        }
+
+        /* Animação shake para feedback visual */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-10px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* ===== MOBILE OPTIMIZATIONS ===== */
+
+        /* Mobile-first design improvements */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            /* Reduce text shadow intensity on mobile for better readability */
+            body {
+                text-shadow: 0 0 3px #00ff41, 0 0 6px #00ff41;
+            }
+
+            /* Smaller scanlines effect on mobile */
+            body::after {
+                background-size: 100% 1px, 2px 100%;
+                opacity: 0.3;
+            }
+
+            /* Mobile header adjustments */
+            .mobile-header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            /* Agent info styling */
+            #agent-id-display,
+            #mobile-agent-id-display {
+                word-break: break-word;
+                overflow-wrap: break-word;
+            }
+
+            @media (max-width: 640px) {
+                .mobile-header {
+                    flex-direction: column;
+                    gap: 12px;
+                    text-align: center;
+                }
+
+                .mobile-header>div {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                #agent-id-display {
+                    font-size: 0.75rem;
+                    line-height: 1.2;
+                }
+            }
+
+            @media (max-width: 480px) {
+
+                #agent-id-display,
+                #mobile-agent-id-display {
+                    font-size: 0.7rem;
+                }
+            }
+
+            /* Mobile navigation - hamburger menu style */
+            .mobile-nav-toggle {
+                display: block;
+                background: none;
+                border: 1px solid #00ff41;
+                color: #00ff41;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-family: 'Fira Code', monospace;
+                font-size: 12px;
+                cursor: pointer;
+                margin-bottom: 16px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .mobile-nav-toggle:hover {
+                background-color: rgba(0, 255, 65, 0.1);
+            }
+
+            /* Mobile sidebar - collapsible */
+            .mobile-sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 80%;
+                height: 100vh;
+                background-color: #0c0c0c;
+                border-right: 1px solid #00ff41;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+                padding: 16px;
+            }
+
+            .mobile-sidebar.open {
+                left: 0;
+            }
+
+            .mobile-sidebar-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                display: none;
+            }
+
+            .mobile-sidebar-backdrop.visible {
+                display: block;
+            }
+
+            /* Mobile content area adjustments */
+            .mobile-content {
+                width: 100%;
+                height: calc(100vh - 140px);
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            /* Mobile modals */
+            .modal-content {
+                max-width: 90%;
+                margin: 0 16px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            /* Mobile terminal border - thinner */
+            .terminal-border {
+                border-width: 1px;
+                box-shadow: 0 0 5px #00ff41 inset;
+            }
+
+            /* Mobile button adjustments */
+            .modal-btn,
+            .btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                touch-action: manipulation;
+                min-height: 44px;
+            }
+
+            /* Mobile input adjustments */
+            .modal-input,
+            .modal-select {
+                padding: 12px;
+                font-size: 16px;
+                /* Prevents zoom on iOS */
+                min-height: 44px;
+            }
+
+            /* Mobile details/summary */
+            details summary {
+                padding: 12px 8px;
+                touch-action: manipulation;
+                cursor: pointer;
+            }
+
+            details[open] summary {
+                margin-bottom: 12px;
+            }
+
+            /* Mobile navigation links */
+            nav a {
+                padding: 12px 8px;
+                display: block;
+                touch-action: manipulation;
+                border-radius: 4px;
+                margin-bottom: 4px;
+            }
+
+            /* Mobile close button for sidebar */
+            .mobile-close-btn {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: rgba(255, 65, 65, 0.1);
+                border: 1px solid #ff4141;
+                color: #ff4141;
+                width: 28px;
+                height: 28px;
+                border-radius: 4px;
+                font-family: 'Fira Code', monospace;
+                font-size: 14px;
+                font-weight: bold;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                z-index: 1000;
+            }
+
+            .mobile-close-btn:hover {
+                background: rgba(255, 65, 65, 0.2);
+                border-color: #ff6b6b;
+                color: #ff6b6b;
+                transform: scale(1.05);
+            }
+
+            .mobile-close-btn:active {
+                transform: scale(0.95);
+            }
+
+            /* Mobile scrollbar styling */
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #0c0c0c;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #00ff41;
+                border-radius: 3px;
+            }
+
+            /* Mobile agent info - make it clearly clickable */
+            #mobile-agent-info {
+                cursor: pointer;
+                transition: all 0.2s ease;
+                user-select: none;
+            }
+
+            #mobile-agent-info:hover {
+                background: rgba(0, 255, 65, 0.05);
+                border-color: #00ff41;
+            }
+
+            #mobile-agent-info:active {
+                background: rgba(0, 255, 65, 0.1);
+                transform: scale(0.98);
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .mobile-nav-toggle {
+                display: none;
+            }
+
+            .mobile-sidebar {
+                position: static;
+                width: auto;
+                height: auto;
+                padding: 16px;
+                border-right: none;
+            }
+        }
+
+        /* Hide mobile elements on desktop */
+        @media (min-width: 769px) {
+            .mobile-nav-toggle {
+                display: none;
+            }
+
+            .mobile-sidebar-backdrop {
+                display: none !important;
+            }
+
+            .mobile-close-btn {
+                display: none;
+            }
+        }
+
+        /* Custom viewport units for mobile browsers */
+        .full-height-mobile {
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+        }
+
+        /* Improve touch targets on mobile */
+        @media (max-width: 768px) {
+
+            button,
+            a,
+            [role="button"] {
+                min-height: 44px;
+                min-width: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .mobile-close-btn {
+                min-height: 36px !important;
+                min-width: 36px !important;
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 16px !important;
+                top: 6px !important;
+                right: 6px !important;
+            }
+
+            /* Better spacing for mobile content */
+            .content-spacing {
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+
+            /* Mobile text size adjustments */
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            h3 {
+                font-size: 1.125rem;
+            }
+
+            /* Improve readability on small screens */
+            p,
+            li {
+                line-height: 1.5;
+            }
+        }
