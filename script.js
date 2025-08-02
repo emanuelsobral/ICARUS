@@ -18,6 +18,48 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Função para carregar configurações do sistema
+        async function loadSystemConfig() {
+            try {
+                const configDoc = await getDoc(doc(db, 'system', 'config'));
+                if (configDoc.exists()) {
+                    const config = configDoc.data();
+                    MASTER_ID = config.masterId;
+                    MASTER_PASSWORD = config.masterPassword;
+                    
+                    if (!MASTER_ID || !MASTER_PASSWORD) {
+                        console.warn('Configurações incompletas encontradas. Mostrando interface de configuração.');
+                        showInitialSetup();
+                        return;
+                    }
+                } else {
+                    // Sistema não inicializado - mostrar interface de configuração inicial
+                    console.log('Nenhuma configuração encontrada. Sistema não inicializado.');
+                    showInitialSetup();
+                    return;
+                }
+                console.log('Sistema configurado com sucesso');
+            } catch (error) {
+                console.error('Erro ao carregar configurações do sistema:', error);
+                showInitialSetup();
+            }
+        }
+
+        // Função para mostrar interface de configuração inicial
+        function showInitialSetup() {
+            const loginStatus = document.getElementById('login-status');
+            loginStatus.innerHTML = `
+                <div class="terminal-text-amber">
+                    <p>SISTEMA NÃO CONFIGURADO</p>
+                    <p class="text-xs mt-2">Abra o console (F12) e execute:</p>
+                    <p class="text-xs font-mono bg-gray-800 p-2 mt-1 rounded">
+                        await initializeSystem("SEU_ID_MESTRE", "SUA_SENHA")
+                    </p>
+                    <p class="text-xs mt-2">Depois recarregue a página</p>
+                </div>
+            `;
+        }
+
         // --- GLOBAL VARIABLES & DOM ELEMENTS ---
         const contentArea = document.getElementById('content-area');
         const nav = document.getElementById('main-nav');
@@ -37,7 +79,8 @@
         const mobileCloseBtn = document.getElementById('mobile-close-btn');
         const mobileAgentInfo = document.getElementById('mobile-agent-info');
 
-        const MASTER_ID = "MASTER_CONTROL";
+        let MASTER_ID = null; // Será carregado do Firebase
+        let MASTER_PASSWORD = null; // Será carregado do Firebase
         let currentAgentId = null;
         let currentAgentData = null; // Dados globais do agente atual
         let isMaster = false;
@@ -174,6 +217,108 @@
                 mobileAccessLevelDisplay.textContent = "NÍVEL DE ACESSO: TOTAL";
             }
         }
+
+        // Função para atualizar MASTER_ID e senha (uso administrativo)
+        async function updateMasterId(newMasterId, newMasterPassword = null) {
+            try {
+                const updateData = {
+                    masterId: newMasterId,
+                    version: "1.0.0",
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                if (newMasterPassword) {
+                    updateData.masterPassword = newMasterPassword;
+                }
+                
+                await setDoc(doc(db, 'system', 'config'), updateData, { merge: true });
+                
+                MASTER_ID = newMasterId;
+                if (newMasterPassword) {
+                    MASTER_PASSWORD = newMasterPassword;
+                }
+                
+                console.log('Configurações atualizadas:', { masterId: newMasterId, hasPassword: !!newMasterPassword });
+                
+                // Atualizar interface se estiver em modo mestre
+                if (isMaster) {
+                    updateMasterInfo();
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Erro ao atualizar configurações:', error);
+                return false;
+            }
+        }
+
+        // Funções de console para facilitar a administração
+        window.setMasterId = updateMasterId;
+        
+        // Função para verificar status do sistema
+        window.checkSystemStatus = async function() {
+            try {
+                console.log('🔍 Verificando status do sistema...');
+                const configDoc = await getDoc(doc(db, 'system', 'config'));
+                
+                if (!configDoc.exists()) {
+                    console.log('❌ Sistema não inicializado');
+                    console.log('💡 Execute: await initializeSystem("SEU_ID", "SUA_SENHA")');
+                    return false;
+                }
+                
+                const config = configDoc.data();
+                console.log('✅ Sistema configurado');
+                console.log('🔑 ID Mestre:', config.masterId || 'NÃO DEFINIDO');
+                console.log('🔒 Senha:', config.masterPassword ? 'CONFIGURADA' : 'NÃO DEFINIDA');
+                console.log('📅 Última atualização:', config.lastUpdated || 'N/A');
+                console.log('📋 Versão:', config.version || 'N/A');
+                
+                return !!(config.masterId && config.masterPassword);
+            } catch (error) {
+                console.error('❌ Erro ao verificar sistema:', error);
+                return false;
+            }
+        };
+        
+        // Função para inicializar o sistema pela primeira vez
+        window.initializeSystem = async function(masterId, masterPassword) {
+            try {
+                if (!masterId || !masterPassword) {
+                    console.error('ERRO: ID e senha são obrigatórios!');
+                    console.log('Uso correto: await initializeSystem("SEU_ID", "SUA_SENHA")');
+                    return false;
+                }
+
+                console.log('Inicializando sistema...');
+                await setDoc(doc(db, 'system', 'config'), {
+                    masterId: masterId,
+                    masterPassword: masterPassword,
+                    version: "1.0.0",
+                    lastUpdated: new Date().toISOString()
+                });
+                
+                // Atualizar variáveis locais
+                MASTER_ID = masterId;
+                MASTER_PASSWORD = masterPassword;
+                
+                console.log('✅ Sistema inicializado com sucesso!');
+                console.log('🔑 ID Mestre:', masterId);
+                console.log('🔒 Senha configurada');
+                console.log('🔄 Recarregue a página ou faça login agora');
+                
+                // Limpar a mensagem de erro da interface
+                const loginStatus = document.getElementById('login-status');
+                if (loginStatus) {
+                    loginStatus.innerHTML = '<span class="terminal-text-green">Sistema configurado! Faça login com suas credenciais.</span>';
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Erro ao inicializar sistema:', error);
+                return false;
+            }
+        };
 
         // Initialize mobile functionality when DOM is loaded
         document.addEventListener('DOMContentLoaded', initMobileFunctionality);
@@ -3199,7 +3344,7 @@
                 name: "PAINEL_ADMIN",
                 content: `
                     <h1 class="text-2xl font-bold terminal-text-red mb-4">PAINEL DE ADMINISTRAÇÃO</h1>
-                    <p class="mb-6 terminal-text-amber">Acesso exclusivo para usuários MASTER_CONTROL</p>
+                    <p class="mb-6 terminal-text-amber">Acesso exclusivo para usuários com privilégios administrativos</p>
 
                     <!-- Campo de busca para Admin -->
                     <div class="terminal-border p-4 mb-6 bg-red-900/20">
@@ -3400,21 +3545,51 @@
         };
 
         // --- AUTHENTICATION & DATA HANDLING ---
-        async function handleLogin(agentId) {
+        async function handleLogin(agentId, password = null) {
             loginStatus.textContent = "VERIFICANDO ID...";
             try {
                 await signInAnonymously(auth);
                 const user = auth.currentUser;
                 if (!user) throw new Error("Anonymous sign-in failed.");
 
-                if (agentId.toUpperCase() === MASTER_ID) {
-                    isMaster = true;
-                    currentAgentId = MASTER_ID;
-                    loginStatus.textContent = "ACESSO MESTRE AUTORIZADO.";
-                    loadMasterView();
-                    return;
+                // Carregar configurações do sistema se ainda não foram carregadas
+                if (MASTER_ID === null || MASTER_PASSWORD === null) {
+                    loginStatus.textContent = "CARREGANDO CONFIGURAÇÕES...";
+                    await loadSystemConfig();
+                    
+                    // Se ainda estão null após loadSystemConfig, significa que não foram configuradas
+                    if (MASTER_ID === null || MASTER_PASSWORD === null) {
+                        // showInitialSetup já foi chamado em loadSystemConfig
+                        return;
+                    }
                 }
 
+                // Verificar se é tentativa de login mestre
+                if (agentId.toUpperCase() === MASTER_ID.toUpperCase()) {
+                    if (password === null) {
+                        // Primeira etapa: ID mestre detectado, solicitar senha
+                        loginStatus.textContent = "ID MESTRE DETECTADO. INSIRA A SENHA:";
+                        showPasswordInput();
+                        return;
+                    } else {
+                        // Segunda etapa: verificar senha
+                        if (password === MASTER_PASSWORD) {
+                            isMaster = true;
+                            currentAgentId = MASTER_ID;
+                            loginStatus.textContent = "ACESSO MESTRE AUTORIZADO.";
+                            hidePasswordInput();
+                            loadMasterView();
+                            return;
+                        } else {
+                            loginStatus.textContent = "SENHA INCORRETA. ACESSO NEGADO.";
+                            hidePasswordInput();
+                            return;
+                        }
+                    }
+                }
+
+                // Login normal de agente
+                hidePasswordInput();
                 isMaster = false;
                 const agentRef = doc(db, "agents", agentId);
                 const agentDoc = await getDoc(agentRef);
@@ -3428,6 +3603,7 @@
                 }
             } catch (error) {
                 console.error("Firebase login error:", error);
+                hidePasswordInput();
                 if (error.code === 'permission-denied') {
                     loginStatus.innerHTML = `<span class="terminal-text-red">ERRO: Permissões insuficientes. Verifique as regras de segurança do Firestore.</span>`;
                 } else if (error.code === 'auth/admin-restricted-operation' || error.code === 'auth/operation-not-allowed') {
@@ -3470,6 +3646,43 @@
             renderNav();
             renderMasterSidebar();
             loadSection('home');
+        }
+
+        // Funções para gerenciar input de senha no login mestre
+        function showPasswordInput() {
+            const loginDiv = document.querySelector('#login-screen .flex.flex-col.sm\\:flex-row');
+            if (!loginDiv.querySelector('#master-password-input')) {
+                const passwordDiv = document.createElement('div');
+                passwordDiv.className = 'mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0';
+                passwordDiv.innerHTML = `
+                    <label for="master-password-input" class="text-xs sm:text-sm sm:mr-2">&gt; SENHA MESTRE:</label>
+                    <div class="flex items-center">
+                        <span class="w-2 h-5 bg-green-400 cursor ml-1"></span>
+                        <input id="master-password-input" type="password"
+                            class="bg-transparent border-none focus:ring-0 w-32 sm:w-24 text-center sm:text-left text-sm"
+                            autofocus>
+                    </div>
+                `;
+                loginDiv.parentElement.insertBefore(passwordDiv, loginDiv.nextSibling);
+                
+                // Adicionar event listener para a senha
+                const passwordInput = document.getElementById('master-password-input');
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && passwordInput.value.trim() !== "") {
+                        const agentIdInput = document.getElementById('agent-id-input');
+                        handleLogin(agentIdInput.value.trim(), passwordInput.value.trim());
+                    }
+                });
+                
+                passwordInput.focus();
+            }
+        }
+
+        function hidePasswordInput() {
+            const passwordDiv = document.querySelector('#master-password-input')?.parentElement?.parentElement;
+            if (passwordDiv) {
+                passwordDiv.remove();
+            }
         }
 
         async function loadCustomSections() {
@@ -4256,7 +4469,7 @@
             console.log('loadMasterPanel called, isMaster:', isMaster);
 
             if (!isMaster) {
-                contentArea.innerHTML = `<h1 class="text-2xl font-bold terminal-text-red mb-4">ACESSO NEGADO</h1><p>Apenas usuários MASTER_CONTROL podem acessar esta seção.</p>`;
+                contentArea.innerHTML = `<h1 class="text-2xl font-bold terminal-text-red mb-4">ACESSO NEGADO</h1><p>Apenas usuários com privilégios administrativos podem acessar esta seção.</p>`;
                 return;
             }
 
@@ -4387,7 +4600,7 @@
             console.log('loadMasterPlayersPanel called, isMaster:', isMaster);
 
             if (!isMaster) {
-                contentArea.innerHTML = `<h1 class="text-2xl font-bold terminal-text-red mb-4">ACESSO NEGADO</h1><p>Apenas usuários MASTER_CONTROL podem acessar esta seção.</p>`;
+                contentArea.innerHTML = `<h1 class="text-2xl font-bold terminal-text-red mb-4">ACESSO NEGADO</h1><p>Apenas usuários com privilégios administrativos podem acessar esta seção.</p>`;
                 return;
             }
 
@@ -7362,6 +7575,9 @@
             // Reset session variables
             currentAgentId = null;
             isMaster = false;
+            
+            // Não resetar MASTER_ID e MASTER_PASSWORD para manter cache da sessão
+            // Eles serão recarregados apenas se necessário
 
             // Unsubscribe from agent data listener
             if (unsubscribeAgentData) {
@@ -7392,6 +7608,9 @@
             const agentIdInput = document.getElementById('agent-id-input');
             agentIdInput.value = '';
             loginStatus.textContent = '';
+            
+            // Limpar campo de senha se existir
+            hidePasswordInput();
 
             // Focus on input for new login
             setTimeout(() => {
@@ -7959,4 +8178,14 @@
             });
 
             console.log('Mobile enhancements initialized');
+        });
+
+        // Inicializar configurações do sistema quando a página carregar
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await loadSystemConfig();
+                console.log('Configurações do sistema carregadas');
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+            }
         });
