@@ -491,18 +491,62 @@
                 position: fixed;
                 top: 0;
                 left: -100%;
-                width: 80%;
+                width: 85%;
+                max-width: 320px;
                 height: 100vh;
                 background-color: #0c0c0c;
-                border-right: 1px solid #00ff41;
+                border-right: 2px solid #00ff41;
+                box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
                 z-index: 1000;
                 transition: left 0.3s ease;
                 overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
                 padding: 16px;
+                display: flex;
+                flex-direction: column;
             }
 
             .mobile-sidebar.open {
                 left: 0;
+            }
+
+            /* Melhor estrutura para navegação mobile */
+            .mobile-sidebar nav {
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 20px;
+            }
+
+            /* Otimização para listas longas no menu */
+            .mobile-sidebar nav a {
+                display: block;
+                padding: 12px 8px;
+                margin-bottom: 4px;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+                word-wrap: break-word;
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .mobile-sidebar nav a:hover,
+            .mobile-sidebar nav a:focus {
+                background-color: rgba(0, 255, 65, 0.1);
+                border: 1px solid rgba(0, 255, 65, 0.3);
+                transform: translateX(4px);
+            }
+
+            /* Context sidebar responsivo */
+            .mobile-sidebar #context-sidebar {
+                flex-shrink: 0;
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid #374151;
+                max-height: 40vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .mobile-sidebar-backdrop {
@@ -523,17 +567,335 @@
             /* Mobile content area adjustments */
             .mobile-content {
                 width: 100%;
-                height: calc(100vh - 140px);
+                min-height: calc(100vh - 140px);
+                max-height: calc(100vh - 140px);
                 padding: 12px;
                 font-size: 13px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Melhorias para telas pequenas */
+            @media (max-height: 600px) {
+                .mobile-sidebar {
+                    width: 90%;
+                    max-width: 280px;
+                }
+
+                .mobile-sidebar #context-sidebar {
+                    max-height: 30vh;
+                }
+
+                .mobile-content {
+                    min-height: calc(100vh - 120px);
+                    max-height: calc(100vh - 120px);
+                    padding: 8px;
+                    font-size: 12px;
+                }
+            }
+
+            /* Otimizações para landscape em dispositivos pequenos */
+            @media (max-height: 500px) and (orientation: landscape) {
+                .mobile-sidebar {
+                    width: 95%;
+                    max-width: 350px;
+                    padding: 12px;
+                }
+
+                .mobile-sidebar h2 {
+                    font-size: 16px;
+                    margin-bottom: 12px;
+                }
+
+                .mobile-sidebar nav a {
+                    padding: 8px 6px;
+                    font-size: 13px;
+                    margin-bottom: 2px;
+                }
+
+                .mobile-sidebar #context-sidebar {
+                    max-height: 25vh;
+                    margin-top: 12px;
+                    padding-top: 12px;
+                }
+
+                .mobile-content {
+                    min-height: calc(100vh - 100px);
+                    max-height: calc(100vh - 100px);
+                    padding: 6px;
+                    font-size: 11px;
+                }
+            }
+
+            /* Melhorias para dispositivos muito pequenos */
+            @media (max-width: 320px) {
+                .mobile-sidebar {
+                    width: 95%;
+                }
+                
+                .mobile-sidebar nav a {
+                    font-size: 13px;
+                    padding: 10px 6px;
+                }
             }
 
             /* Mobile modals */
             .modal-content {
                 max-width: 90%;
                 margin: 0 16px;
-                max-height: 80vh;
+                max-height: 85vh;
                 overflow-y: auto;
+            }
+
+            /* Mobile specific modal content for character sheet */
+            #traits-selection-modal .modal-content,
+            #knowledge-selection-modal .modal-content,
+            #skills-selection-modal .modal-content {
+                max-height: 90vh;
+                height: auto;
+                min-height: 70vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Ensure scrollable areas work properly on mobile */
+            .mobile-traits-content,
+            #mobile-positive-content,
+            #mobile-negative-content,
+            #mobile-knowledge-content,
+            #mobile-skills-content {
+                height: auto !important;
+                max-height: 60vh !important;
+                min-height: 50vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 40px !important;
+                margin-bottom: 8px;
+            }
+        }
+
+        /* Desktop styles for knowledge and skills modals */
+        @media (min-width: 768px) {
+            #mobile-knowledge-content,
+            #mobile-skills-content {
+                height: 70vh !important;
+                max-height: 70vh !important;
+                min-height: 60vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+                scrollbar-width: thin;
+                scrollbar-color: #00ff41 transparent;
+            }
+
+            #mobile-knowledge-content::-webkit-scrollbar,
+            #mobile-skills-content::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            #mobile-knowledge-content::-webkit-scrollbar-track,
+            #mobile-skills-content::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            #mobile-knowledge-content::-webkit-scrollbar-thumb,
+            #mobile-skills-content::-webkit-scrollbar-thumb {
+                background: #00ff41;
+                border-radius: 4px;
+            }
+
+            #mobile-knowledge-content::-webkit-scrollbar-thumb:hover,
+            #mobile-skills-content::-webkit-scrollbar-thumb:hover {
+                background: #00cc33;
+            }
+        }
+
+        /* Race and Class modal scroll areas */
+        #race-selection-modal .overflow-y-auto,
+        #class-selection-modal .overflow-y-auto {
+            padding-bottom: 40px !important;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff41 transparent;
+        }
+
+        #race-selection-modal .overflow-y-auto::-webkit-scrollbar,
+        #class-selection-modal .overflow-y-auto::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #race-selection-modal .overflow-y-auto::-webkit-scrollbar-track,
+        #class-selection-modal .overflow-y-auto::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #race-selection-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #a855f7; /* Purple for race */
+            border-radius: 3px;
+        }
+
+        #class-selection-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #ea580c; /* Orange for class */
+            border-radius: 3px;
+        }
+
+        /* Desktop scroll areas for traits */
+        .traits-desktop-scroll {
+            padding-bottom: 30px !important;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff41 transparent;
+        }
+
+        .traits-desktop-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .traits-desktop-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .traits-desktop-scroll::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 3px;
+        }
+
+        /* Fix for very small screens - only mobile */
+        @media (max-height: 600px) and (max-width: 767px) {
+                #traits-selection-modal .modal-content,
+                #knowledge-selection-modal .modal-content,
+                #skills-selection-modal .modal-content,
+                #race-selection-modal .modal-content,
+                #class-selection-modal .modal-content {
+                    max-height: 95vh;
+                    margin: 8px;
+                }
+
+                .mobile-traits-content,
+                #mobile-positive-content,
+                #mobile-negative-content,
+                #mobile-knowledge-content,
+                #mobile-skills-content {
+                    max-height: 50vh !important;
+                    min-height: 40vh;
+                    padding-bottom: 50px !important;
+                }
+
+                /* Extra spacing for traits containers */
+                #mobile-positive-content .space-y-3,
+                #mobile-negative-content .space-y-3 {
+                    padding-bottom: 20px !important;
+                }
+
+                /* Additional bottom spacing for traits container divs */
+                #mobile-positive-content > div,
+                #mobile-negative-content > div {
+                    padding-bottom: 30px !important;
+                }
+
+                /* Race and class modal adjustments */
+                #race-selection-modal .overflow-y-auto,
+                #class-selection-modal .overflow-y-auto {
+                    max-height: 50vh !important;
+                    padding-bottom: 60px !important;
+                }
+            }
+
+            /* Extra small screens (phones in landscape, etc) - only mobile */
+            @media (max-height: 500px) and (max-width: 767px) {
+                #traits-selection-modal .modal-content,
+                #knowledge-selection-modal .modal-content,
+                #skills-selection-modal .modal-content,
+                #race-selection-modal .modal-content,
+                #class-selection-modal .modal-content {
+                    max-height: 98vh;
+                    margin: 4px;
+                    padding: 12px;
+                }
+
+                .mobile-traits-content,
+                #mobile-positive-content,
+                #mobile-negative-content,
+                #mobile-knowledge-content,
+                #mobile-skills-content {
+                    max-height: 45vh !important;
+                    min-height: 35vh;
+                    padding-bottom: 60px !important;
+                }
+
+                /* Extra spacing for traits containers on small screens */
+                #mobile-positive-content .space-y-3,
+                #mobile-negative-content .space-y-3 {
+                    padding-bottom: 30px !important;
+                }
+
+                /* Additional bottom spacing for traits container divs on small screens */
+                #mobile-positive-content > div,
+                #mobile-negative-content > div {
+                    padding-bottom: 40px !important;
+                }
+
+                /* Race and class modal adjustments for small screens */
+                #race-selection-modal .overflow-y-auto,
+                #class-selection-modal .overflow-y-auto {
+                    max-height: 40vh !important;
+                    padding-bottom: 70px !important;
+                }
+            }
+
+            /* Ensure modal buttons are always visible */
+            #traits-selection-modal .modal-content > div:last-child,
+            #knowledge-selection-modal .modal-content > div:last-child,
+            #skills-selection-modal .modal-content > div:last-child,
+            #race-selection-modal .modal-content > div:last-child,
+            #class-selection-modal .modal-content > div:last-child {
+                flex-shrink: 0;
+                margin-top: auto;
+                padding-top: 16px;
+                background: #1a1a1a;
+                border-top: 1px solid #333;
+            }
+
+            /* Ensure last items in modal lists have extra spacing */
+            .mobile-traits-content label:last-child,
+            #mobile-positive-content label:last-child,
+            #mobile-negative-content label:last-child,
+            #mobile-knowledge-content label:last-child,
+            #mobile-skills-content label:last-child,
+            .traits-desktop-scroll label:last-child,
+            #race-selection-modal .race-option:last-child,
+            #class-selection-modal .class-option:last-child {
+                margin-bottom: 60px !important;
+                padding-bottom: 15px !important;
+            }
+
+            /* Extra spacing for mobile modal scrollable content */
+            .mobile-traits-content::after,
+            #mobile-positive-content::after,
+            #mobile-negative-content::after,
+            #mobile-knowledge-content::after,
+            #mobile-skills-content::after,
+            #race-selection-modal .overflow-y-auto::after,
+            #class-selection-modal .overflow-y-auto::after {
+                content: '';
+                display: block;
+                height: 50px;
+                width: 100%;
+            }
+
+            /* Extra spacing for desktop traits scroll areas */
+            @media (min-width: 769px) {
+                .traits-desktop-scroll::after {
+                    content: '';
+                    display: block;
+                    height: 40px;
+                    width: 100%;
+                }
+            }
+
+            /* Fixed modal footer styling */
+            .modal-footer-fixed {
+                border-top: 1px solid #374151;
+                background-color: #0c0c0c;
+                position: sticky;
+                bottom: 0;
             }
 
             /* Mobile terminal border - thinner */
@@ -583,13 +945,88 @@
             /* Mobile close button for sidebar */
             .mobile-close-btn {
                 position: absolute;
-                top: 8px;
-                right: 8px;
-                background: rgba(255, 65, 65, 0.1);
-                border: 1px solid #ff4141;
+                top: 12px;
+                right: 12px;
+                background: rgba(255, 65, 65, 0.2);
+                border: 2px solid #ff4141;
                 color: #ff4141;
-                width: 28px;
-                height: 28px;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                font-weight: bold;
+                cursor: pointer;
+                z-index: 1001;
+                transition: all 0.2s ease;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .mobile-close-btn:hover,
+            .mobile-close-btn:focus {
+                background: rgba(255, 65, 65, 0.3);
+                transform: scale(1.1);
+                box-shadow: 0 0 10px rgba(255, 65, 65, 0.5);
+            }
+
+            .mobile-close-btn:active {
+                transform: scale(0.95);
+                background: rgba(255, 65, 65, 0.4);
+            }
+
+            /* Melhor área de toque para navegação mobile */
+            .mobile-sidebar nav a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                padding: 12px 8px;
+                margin-bottom: 4px;
+                border-radius: 6px;
+                border: 1px solid transparent;
+                transition: all 0.2s ease;
+                -webkit-tap-highlight-color: transparent;
+                position: relative;
+            }
+
+            .mobile-sidebar nav a:hover,
+            .mobile-sidebar nav a:focus,
+            .mobile-sidebar nav a:active {
+                background: rgba(0, 255, 65, 0.15);
+                border-color: rgba(0, 255, 65, 0.4);
+                transform: translateX(6px);
+                box-shadow: 0 2px 8px rgba(0, 255, 65, 0.2);
+            }
+
+            /* Indicador visual para links ativos */
+            .mobile-sidebar nav a[data-section="home"] {
+                border-left: 3px solid #00ff41;
+                background: rgba(0, 255, 65, 0.05);
+            }
+
+            /* Scroll suave para contexto sidebar mobile */
+            .mobile-sidebar #context-sidebar {
+                scrollbar-width: thin;
+                scrollbar-color: #00ff41 transparent;
+            }
+
+            .mobile-sidebar #context-sidebar::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .mobile-sidebar #context-sidebar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .mobile-sidebar #context-sidebar::-webkit-scrollbar-thumb {
+                background: #00ff41;
+                border-radius: 2px;
+            }
+
+            /* Scrollbar mobile adicional */
+            .mobile-sidebar .scrollbar {
                 border-radius: 4px;
                 font-family: 'Fira Code', monospace;
                 font-size: 14px;
@@ -673,59 +1110,8 @@
             .mobile-close-btn {
                 display: none;
             }
-        }
 
-        /* Custom viewport units for mobile browsers */
-        .full-height-mobile {
-            height: 100vh;
-            height: calc(var(--vh, 1vh) * 100);
-        }
-
-        /* Improve touch targets on mobile */
-        @media (max-width: 768px) {
-
-            button,
-            a,
-            [role="button"] {
-                min-height: 44px;
-                min-width: 44px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .mobile-close-btn {
-                min-height: 36px !important;
-                min-width: 36px !important;
-                width: 36px !important;
-                height: 36px !important;
-                font-size: 16px !important;
-                top: 6px !important;
-                right: 6px !important;
-            }
-
-            /* Better spacing for mobile content */
-            .content-spacing {
-                padding: 8px;
-                margin-bottom: 8px;
-            }
-
-            /* Mobile text size adjustments */
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            h2 {
-                font-size: 1.25rem;
-            }
-
-            h3 {
-                font-size: 1.125rem;
-            }
-
-            /* Improve readability on small screens */
-            p,
-            li {
-                line-height: 1.5;
+            .mobile-sidebar {
+                display: none;
             }
         }

@@ -87,6 +87,64 @@
         let unsubscribeAgentData = null;
         let isMobileSidebarOpen = false;
 
+        // --- MODAL UTILITY FUNCTIONS ---
+        function showErrorModal(message) {
+            const modal = document.getElementById('posts-error-modal');
+            const messageElement = document.getElementById('posts-error-message');
+            
+            if (modal && messageElement) {
+                messageElement.textContent = message;
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function showSuccessModal(message) {
+            const modal = document.getElementById('posts-success-modal');
+            const messageElement = document.getElementById('posts-success-message');
+            
+            if (modal && messageElement) {
+                messageElement.textContent = message;
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function showAttributeErrorModal(message) {
+            const modal = document.getElementById('attribute-error-modal');
+            const messageElement = document.getElementById('attribute-error-message');
+            
+            if (modal && messageElement) {
+                messageElement.textContent = message;
+                modal.classList.remove('hidden');
+            }
+        }
+
+        // Initialize modal event listeners
+        function initializeModalEventListeners() {
+            // Error modal
+            const errorOkBtn = document.getElementById('posts-error-ok-btn');
+            if (errorOkBtn) {
+                errorOkBtn.addEventListener('click', () => {
+                    document.getElementById('posts-error-modal').classList.add('hidden');
+                });
+            }
+
+            // Success modal
+            const successOkBtn = document.getElementById('posts-success-ok-btn');
+            if (successOkBtn) {
+                successOkBtn.addEventListener('click', () => {
+                    document.getElementById('posts-success-modal').classList.add('hidden');
+                });
+            }
+
+            // Attribute error modal
+            const attributeErrorOkBtn = document.getElementById('attribute-error-ok-btn');
+            if (attributeErrorOkBtn) {
+                attributeErrorOkBtn.addEventListener('click', () => {
+                    document.getElementById('attribute-error-modal').classList.add('hidden');
+                });
+            }
+        }
+
         // --- MOBILE FUNCTIONALITY ---
         function initMobileFunctionality() {
             // Mobile navigation toggle
@@ -329,6 +387,7 @@
 
         // Initialize mobile functionality when DOM is loaded
         document.addEventListener('DOMContentLoaded', initMobileFunctionality);
+        document.addEventListener('DOMContentLoaded', initializeModalEventListeners);
 
         // --- DEFAULT DATA STRUCTURES ---
         const defaultPlayerStatus = {
@@ -1016,18 +1075,30 @@
                     const agentDoc = await getDoc(agentRef);
 
                     if (!agentDoc.exists()) {
-                        alert('Agente não encontrado.');
+                        showErrorModal('Agente não encontrado.');
                         return;
                     }
 
                     agentData = agentDoc.data();
+                    // Atualizar dados globais para garantir sincronização
+                    if (agentId === currentAgentId) {
+                        currentAgentData = agentData;
+                    }
                 } else {
                     // Jogador só pode editar sua própria ficha
                     if (agentId !== currentAgentId) {
-                        alert('Você só pode editar sua própria ficha.');
+                        showErrorModal('Você só pode editar sua própria ficha.');
                         return;
                     }
-                    agentData = currentAgentData;
+                    // Recarregar dados do Firebase para garantir dados atualizados
+                    const agentRef = doc(db, "agents", agentId);
+                    const agentDoc = await getDoc(agentRef);
+                    if (agentDoc.exists()) {
+                        currentAgentData = agentDoc.data();
+                        agentData = currentAgentData;
+                    } else {
+                        agentData = currentAgentData;
+                    }
                 }
 
                 const characterSheet = agentData.playerStatus?.characterSheet || {
@@ -1042,6 +1113,18 @@
                     habilidades: [],
                     pontosDisponíveis: 6
                 };
+
+                // Garantir que todos os arrays sejam arrays válidos
+                characterSheet.traçosPositivos = characterSheet.traçosPositivos || [];
+                characterSheet.traçosNegativos = characterSheet.traçosNegativos || [];
+                characterSheet.conhecimentos = characterSheet.conhecimentos || [];
+                characterSheet.habilidades = characterSheet.habilidades || [];
+
+                // Verificar se são arrays válidos e corrigir se necessário
+                if (!Array.isArray(characterSheet.traçosPositivos)) characterSheet.traçosPositivos = [];
+                if (!Array.isArray(characterSheet.traçosNegativos)) characterSheet.traçosNegativos = [];
+                if (!Array.isArray(characterSheet.conhecimentos)) characterSheet.conhecimentos = [];
+                if (!Array.isArray(characterSheet.habilidades)) characterSheet.habilidades = [];
 
                 // Obter valor de inteligência do agente para calcular modificador
                 const intelligenceValue = agentData.playerStatus?.inteligência || 10;
@@ -1169,7 +1252,7 @@
                                 <div class="terminal-border p-4 bg-green-900/10">
                                     <div class="flex items-center gap-2 mb-3">
                                         <span class="text-sm">Selecionados: </span>
-                                        <span id="positive-traits-count" class="font-bold terminal-text-green">${characterSheet.traçosPositivos.length}</span>
+                                        <span id="positive-traits-count" class="font-bold terminal-text-green">${(characterSheet.traçosPositivos && Array.isArray(characterSheet.traçosPositivos)) ? characterSheet.traçosPositivos.length : 0}</span>
                                         <button id="add-positive-traits-btn" class="btn bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1 px-2 rounded ml-auto">
                                             + Adicionar
                                         </button>
@@ -1186,7 +1269,7 @@
                                 <div class="terminal-border p-4 bg-red-900/10">
                                     <div class="flex items-center gap-2 mb-3">
                                         <span class="text-sm">Selecionados: </span>
-                                        <span id="negative-traits-count" class="font-bold terminal-text-red">${characterSheet.traçosNegativos.length}</span>
+                                        <span id="negative-traits-count" class="font-bold terminal-text-red">${(characterSheet.traçosNegativos && Array.isArray(characterSheet.traçosNegativos)) ? characterSheet.traçosNegativos.length : 0}</span>
                                         <button id="add-negative-traits-btn" class="btn bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded ml-auto">
                                             + Adicionar
                                         </button>
@@ -1204,7 +1287,7 @@
                             <div class="terminal-border p-4 bg-blue-900/10">
                                 <div class="flex items-center gap-2 mb-3">
                                     <span class="text-sm">Selecionados: </span>
-                                    <span id="knowledge-count" class="font-bold ${characterSheet.conhecimentos.length <= 3 ? 'terminal-text-green' : 'terminal-text-red'}">${characterSheet.conhecimentos.length}</span>
+                                    <span id="knowledge-count" class="font-bold ${(characterSheet.conhecimentos && Array.isArray(characterSheet.conhecimentos)) ? (characterSheet.conhecimentos.length <= 3 ? 'terminal-text-green' : 'terminal-text-red') : 'terminal-text-green'}">${(characterSheet.conhecimentos && Array.isArray(characterSheet.conhecimentos)) ? characterSheet.conhecimentos.length : 0}</span>
                                     <span class="text-sm">/ 3</span>
                                     <button id="add-knowledge-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded ml-auto">
                                         + Adicionar
@@ -1222,7 +1305,7 @@
                             <div class="terminal-border p-4 bg-yellow-900/10">
                                 <div class="flex items-center gap-2 mb-3">
                                     <span class="text-sm">Selecionadas: </span>
-                                    <span id="skills-count" class="font-bold ${characterSheet.habilidades.length <= 12 ? 'terminal-text-green' : 'terminal-text-red'}">${characterSheet.habilidades.length}</span>
+                                    <span id="skills-count" class="font-bold ${(characterSheet.habilidades && Array.isArray(characterSheet.habilidades)) ? (characterSheet.habilidades.length <= 12 ? 'terminal-text-green' : 'terminal-text-red') : 'terminal-text-green'}">${(characterSheet.habilidades && Array.isArray(characterSheet.habilidades)) ? characterSheet.habilidades.length : 0}</span>
                                     <span class="text-sm">/ 12</span>
                                     <button id="add-skills-btn" class="btn bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold py-1 px-2 rounded ml-auto">
                                         + Adicionar
@@ -1262,6 +1345,12 @@
 
                 // Configurar event listeners
                 setupCharacterSheetEventListeners();
+
+                // Recarregar dados do Firebase e atualizar interface
+                await refreshAgentDataAndUpdateUI(agentId);
+
+                // Pré-marcar checkboxes baseados nos dados salvos do Firebase (com delay)
+                setTimeout(() => preSelectCheckboxesFromFirebase(), 300);
 
             } catch (error) {
                 console.error('Erro ao carregar ficha do personagem:', error);
@@ -1344,7 +1433,19 @@
 
         function getCurrentSelectedSubrace() {
             const subraceSelect = document.querySelector('#subrace-select');
-            return subraceSelect ? subraceSelect.value : '';
+            const fromSelect = subraceSelect ? subraceSelect.value : '';
+            
+            // Se encontrou dados do select, usar esses
+            if (fromSelect) {
+                return fromSelect;
+            }
+            
+            // Caso contrário, verificar nos dados salvos do agente
+            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.characterSheet) {
+                return currentAgentData.playerStatus.characterSheet.subRaça || '';
+            }
+            
+            return '';
         }
 
         function getCurrentSelectedClass() {
@@ -1375,24 +1476,49 @@
             return '';
         }
 
+        // Arrays para armazenar seleções temporárias durante a edição dos modais
+        let tempSelectedTraits = {
+            positive: [],
+            negative: []
+        };
+
+        let tempSelectedKnowledge = [];
+        let tempSelectedSkills = [];
+
         function getCurrentSelectedPositiveTraits() {
-            const checkboxes = document.querySelectorAll('.positive-trait-checkbox:checked');
-            return Array.from(checkboxes).map(cb => cb.value);
+            // Sempre priorizar dados salvos mais recentes do Firebase
+            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.characterSheet && currentAgentData.playerStatus.characterSheet.traçosPositivos) {
+                return [...currentAgentData.playerStatus.characterSheet.traçosPositivos]; // Criar cópia para evitar mutação
+            }
+            
+            return [];
         }
 
         function getCurrentSelectedNegativeTraits() {
-            const checkboxes = document.querySelectorAll('.negative-trait-checkbox:checked');
-            return Array.from(checkboxes).map(cb => cb.value);
+            // Sempre priorizar dados salvos mais recentes do Firebase
+            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.characterSheet && currentAgentData.playerStatus.characterSheet.traçosNegativos) {
+                return [...currentAgentData.playerStatus.characterSheet.traçosNegativos]; // Criar cópia para evitar mutação
+            }
+            
+            return [];
         }
 
         function getCurrentSelectedKnowledge() {
-            const checkboxes = document.querySelectorAll('.knowledge-checkbox:checked');
-            return Array.from(checkboxes).map(cb => cb.value);
+            // Sempre priorizar dados salvos mais recentes do Firebase
+            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.characterSheet && currentAgentData.playerStatus.characterSheet.conhecimentos) {
+                return [...currentAgentData.playerStatus.characterSheet.conhecimentos]; // Criar cópia para evitar mutação
+            }
+            
+            return [];
         }
 
         function getCurrentSelectedSkills() {
-            const checkboxes = document.querySelectorAll('.skill-checkbox:checked');
-            return Array.from(checkboxes).map(cb => cb.value);
+            // Sempre priorizar dados salvos mais recentes do Firebase
+            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.characterSheet && currentAgentData.playerStatus.characterSheet.habilidades) {
+                return [...currentAgentData.playerStatus.characterSheet.habilidades]; // Criar cópia para evitar mutação
+            }
+            
+            return [];
         }
 
         // Funções para renderizar traços selecionados
@@ -1643,16 +1769,21 @@
                                 <h4 class="text-lg font-bold text-green-400 mb-3 flex-shrink-0">✅ Traços Positivos</h4>
                                 <div class="traits-desktop-scroll flex-1 overflow-y-auto space-y-2 pr-2" style="max-height: calc(100vh - 300px);">
                                     ${positiveTraits.map(trait => `
-                                        <label class="flex items-start p-3 border border-green-700 rounded cursor-pointer hover:bg-green-900/20 transition-colors flex-shrink-0">
-                                            <input type="checkbox" class="positive-trait-checkbox mr-3 mt-1 w-4 h-4 flex-shrink-0" value="${trait.name}">
-                                            <div class="flex-1 min-w-0">
+                                        <div class="flex items-start p-3 border border-green-700 rounded hover:bg-green-900/20 transition-colors flex-shrink-0">
+                                            <div class="flex-1 min-w-0 mr-3">
                                                 <div class="flex justify-between items-start mb-1">
                                                     <span class="font-bold text-green-400 text-sm">${trait.name}</span>
                                                     <span class="text-red-400 text-sm font-bold ml-2 flex-shrink-0">${trait.cost}</span>
                                                 </div>
                                                 <p class="text-xs text-gray-300 leading-relaxed">${trait.effect}</p>
                                             </div>
-                                        </label>
+                                            <button 
+                                                class="trait-toggle-btn positive-trait-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors"
+                                                data-trait="${trait.name}"
+                                                data-type="positive">
+                                                +
+                                            </button>
+                                        </div>
                                     `).join('')}
                                 </div>
                             </div>
@@ -1662,16 +1793,21 @@
                                 <h4 class="text-lg font-bold text-red-400 mb-3 flex-shrink-0">❌ Traços Negativos</h4>
                                 <div class="traits-desktop-scroll flex-1 overflow-y-auto space-y-2 pr-2" style="max-height: calc(100vh - 300px);">
                                     ${negativeTraits.map(trait => `
-                                        <label class="flex items-start p-3 border border-red-700 rounded cursor-pointer hover:bg-red-900/20 transition-colors flex-shrink-0">
-                                            <input type="checkbox" class="negative-trait-checkbox mr-3 mt-1 w-4 h-4 flex-shrink-0" value="${trait.name}">
-                                            <div class="flex-1 min-w-0">
+                                        <div class="flex items-start p-3 border border-red-700 rounded hover:bg-red-900/20 transition-colors flex-shrink-0">
+                                            <div class="flex-1 min-w-0 mr-3">
                                                 <div class="flex justify-between items-start mb-1">
                                                     <span class="font-bold text-red-400 text-sm">${trait.name}</span>
                                                     <span class="text-green-400 text-sm font-bold ml-2 flex-shrink-0">+${trait.cost}</span>
                                                 </div>
                                                 <p class="text-xs text-gray-300 leading-relaxed">${trait.effect}</p>
                                             </div>
-                                        </label>
+                                            <button 
+                                                class="trait-toggle-btn negative-trait-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors"
+                                                data-trait="${trait.name}"
+                                                data-type="negative">
+                                                +
+                                            </button>
+                                        </div>
                                     `).join('')}
                                 </div>
                             </div>
@@ -1680,41 +1816,51 @@
                         <!-- Mobile view - tabbed content -->
                         <div class="block md:hidden flex-1 min-h-0 overflow-hidden">
                             <!-- Traços Positivos Mobile -->
-                            <div id="mobile-positive-content" class="h-full overflow-y-auto" style="height: calc(100vh - 350px); max-height: calc(100vh - 350px); -webkit-overflow-scrolling: touch;">
+                            <div id="mobile-positive-content" class="h-full overflow-y-auto mobile-traits-content">
                                 <div class="space-y-3 pb-4">
                                     ${positiveTraits.map(trait => `
-                                        <label class="block p-4 border border-green-700 rounded cursor-pointer hover:bg-green-900/20 transition-colors active:bg-green-900/30 flex-shrink-0">
+                                        <div class="block p-4 border border-green-700 rounded hover:bg-green-900/20 transition-colors active:bg-green-900/30 flex-shrink-0">
                                             <div class="flex items-start">
-                                                <input type="checkbox" class="positive-trait-checkbox mr-3 mt-1 w-5 h-5 flex-shrink-0" value="${trait.name}">
-                                                <div class="flex-1 min-w-0">
+                                                <div class="flex-1 min-w-0 mr-3">
                                                     <div class="flex justify-between items-start mb-2">
                                                         <span class="font-bold text-green-400 text-base leading-tight">${trait.name}</span>
                                                         <span class="text-red-400 text-lg font-bold ml-3 flex-shrink-0">${trait.cost}</span>
                                                     </div>
                                                     <p class="text-sm text-gray-300 leading-relaxed">${trait.effect}</p>
                                                 </div>
+                                                <button 
+                                                    class="trait-toggle-btn positive-trait-btn flex-shrink-0 w-10 h-10 rounded text-base font-bold transition-colors"
+                                                    data-trait="${trait.name}"
+                                                    data-type="positive">
+                                                    +
+                                                </button>
                                             </div>
-                                        </label>
+                                        </div>
                                     `).join('')}
                                 </div>
                             </div>
                             
                             <!-- Traços Negativos Mobile -->
-                            <div id="mobile-negative-content" class="h-full overflow-y-auto hidden" style="height: calc(100vh - 350px); max-height: calc(100vh - 350px); -webkit-overflow-scrolling: touch;">
+                            <div id="mobile-negative-content" class="h-full overflow-y-auto hidden mobile-traits-content">
                                 <div class="space-y-3 pb-4">
                                     ${negativeTraits.map(trait => `
-                                        <label class="block p-4 border border-red-700 rounded cursor-pointer hover:bg-red-900/20 transition-colors active:bg-red-900/30 flex-shrink-0">
+                                        <div class="block p-4 border border-red-700 rounded hover:bg-red-900/20 transition-colors active:bg-red-900/30 flex-shrink-0">
                                             <div class="flex items-start">
-                                                <input type="checkbox" class="negative-trait-checkbox mr-3 mt-1 w-5 h-5 flex-shrink-0" value="${trait.name}">
-                                                <div class="flex-1 min-w-0">
+                                                <div class="flex-1 min-w-0 mr-3">
                                                     <div class="flex justify-between items-start mb-2">
                                                         <span class="font-bold text-red-400 text-base leading-tight">${trait.name}</span>
                                                         <span class="text-green-400 text-lg font-bold ml-3 flex-shrink-0">+${trait.cost}</span>
                                                     </div>
                                                     <p class="text-sm text-gray-300 leading-relaxed">${trait.effect}</p>
                                                 </div>
+                                                <button 
+                                                    class="trait-toggle-btn negative-trait-btn flex-shrink-0 w-10 h-10 rounded text-base font-bold transition-colors"
+                                                    data-trait="${trait.name}"
+                                                    data-type="negative">
+                                                    +
+                                                </button>
                                             </div>
-                                        </label>
+                                        </div>
                                     `).join('')}
                                 </div>
                             </div>
@@ -1759,20 +1905,25 @@
                         
                         <!-- Lista de conhecimentos com scroll otimizado -->
                         <div class="flex-1 min-h-0 overflow-hidden">
-                            <div class="h-full overflow-y-auto space-y-2 pr-2" style="max-height: calc(100vh - 350px); -webkit-overflow-scrolling: touch;">
+                            <div id="mobile-knowledge-content" class="h-full overflow-y-auto space-y-2 pr-2 mobile-traits-content">
                                 ${knowledgeList.map(knowledge => `
-                                    <label class="block p-3 border border-blue-700 rounded cursor-pointer hover:bg-blue-900/20 transition-colors active:bg-blue-900/30 flex-shrink-0">
+                                    <div class="block p-3 border border-blue-700 rounded hover:bg-blue-900/20 transition-colors active:bg-blue-900/30 flex-shrink-0">
                                         <div class="flex items-start">
-                                            <input type="checkbox" class="knowledge-checkbox mr-3 mt-1 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" value="${knowledge.name}">
-                                            <div class="flex-1 min-w-0">
+                                            <div class="flex-1 min-w-0 mr-3">
                                                 <div class="flex justify-between items-start mb-2">
                                                     <span class="font-bold text-blue-400 text-sm sm:text-base leading-tight">${knowledge.name}</span>
                                                     <span class="text-yellow-400 text-sm font-bold ml-3 flex-shrink-0">${knowledge.attribute}</span>
                                                 </div>
                                                 <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">${knowledge.effect}</p>
                                             </div>
+                                            <button 
+                                                class="knowledge-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors"
+                                                data-knowledge="${knowledge.name}"
+                                                data-type="knowledge">
+                                                +
+                                            </button>
                                         </div>
-                                    </label>
+                                    </div>
                                 `).join('')}
                             </div>
                         </div>
@@ -1807,20 +1958,25 @@
                         
                         <!-- Lista de habilidades com scroll otimizado -->
                         <div class="flex-1 min-h-0 overflow-hidden">
-                            <div class="h-full overflow-y-auto space-y-2 pr-2" style="max-height: calc(100vh - 350px); -webkit-overflow-scrolling: touch;">
+                            <div id="mobile-skills-content" class="h-full overflow-y-auto space-y-2 pr-2 mobile-traits-content">
                                 ${skillsList.map(skill => `
-                                    <label class="block p-3 border border-yellow-700 rounded cursor-pointer hover:bg-yellow-900/20 transition-colors active:bg-yellow-900/30 flex-shrink-0">
+                                    <div class="block p-3 border border-yellow-700 rounded hover:bg-yellow-900/20 transition-colors active:bg-yellow-900/30 flex-shrink-0">
                                         <div class="flex items-start">
-                                            <input type="checkbox" class="skill-checkbox mr-3 mt-1 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" value="${skill.name}">
-                                            <div class="flex-1 min-w-0">
+                                            <div class="flex-1 min-w-0 mr-3">
                                                 <div class="flex justify-between items-start mb-2">
                                                     <span class="font-bold text-yellow-400 text-sm sm:text-base leading-tight">${skill.name}</span>
                                                     <span class="text-blue-400 text-sm font-bold ml-3 flex-shrink-0">${skill.attribute}</span>
                                                 </div>
                                                 <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">${skill.description}</p>
                                             </div>
+                                            <button 
+                                                class="skill-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors"
+                                                data-skill="${skill.name}"
+                                                data-type="skill">
+                                                +
+                                            </button>
                                         </div>
-                                    </label>
+                                    </div>
                                 `).join('')}
                             </div>
                         </div>
@@ -1906,27 +2062,6 @@
             const addPositiveTraitsBtn = document.getElementById('add-positive-traits-btn');
             if (addPositiveTraitsBtn) {
                 addPositiveTraitsBtn.addEventListener('click', () => {
-                    // Pré-selecionar traços já salvos
-                    const characterSheet = currentAgentData?.playerStatus?.characterSheet;
-                    setTimeout(() => {
-                        if (characterSheet && characterSheet.traçosPositivos) {
-                            characterSheet.traçosPositivos.forEach(trait => {
-                                const checkbox = document.querySelector(`.positive-trait-checkbox[value="${trait}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                        }
-                        if (characterSheet && characterSheet.traçosNegativos) {
-                            characterSheet.traçosNegativos.forEach(trait => {
-                                const checkbox = document.querySelector(`.negative-trait-checkbox[value="${trait}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                        }
-                        setupMobilePointsUpdater();
-                    }, 100);
                     openTraitsModal();
                 });
             }
@@ -1934,27 +2069,6 @@
             const addNegativeTraitsBtn = document.getElementById('add-negative-traits-btn');
             if (addNegativeTraitsBtn) {
                 addNegativeTraitsBtn.addEventListener('click', () => {
-                    // Pré-selecionar traços já salvos
-                    const characterSheet = currentAgentData?.playerStatus?.characterSheet;
-                    setTimeout(() => {
-                        if (characterSheet && characterSheet.traçosPositivos) {
-                            characterSheet.traçosPositivos.forEach(trait => {
-                                const checkbox = document.querySelector(`.positive-trait-checkbox[value="${trait}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                        }
-                        if (characterSheet && characterSheet.traçosNegativos) {
-                            characterSheet.traçosNegativos.forEach(trait => {
-                                const checkbox = document.querySelector(`.negative-trait-checkbox[value="${trait}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                        }
-                        setupMobilePointsUpdater();
-                    }, 100);
                     openTraitsModal();
                 });
             }
@@ -1963,20 +2077,7 @@
             const addKnowledgeBtn = document.getElementById('add-knowledge-btn');
             if (addKnowledgeBtn) {
                 addKnowledgeBtn.addEventListener('click', () => {
-                    // Pré-selecionar conhecimentos já salvos
-                    const characterSheet = currentAgentData?.playerStatus?.characterSheet;
-                    if (characterSheet && characterSheet.conhecimentos) {
-                        setTimeout(() => {
-                            characterSheet.conhecimentos.forEach(knowledge => {
-                                const checkbox = document.querySelector(`.knowledge-checkbox[value="${knowledge}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                            setupKnowledgeSkillCounters();
-                        }, 100);
-                    }
-                    document.getElementById('knowledge-selection-modal').classList.remove('hidden');
+                    openKnowledgeModal();
                 });
             }
 
@@ -2005,20 +2106,7 @@
             const addSkillsBtn = document.getElementById('add-skills-btn');
             if (addSkillsBtn) {
                 addSkillsBtn.addEventListener('click', () => {
-                    // Pré-selecionar habilidades já salvas
-                    const characterSheet = currentAgentData?.playerStatus?.characterSheet;
-                    if (characterSheet && characterSheet.habilidades) {
-                        setTimeout(() => {
-                            characterSheet.habilidades.forEach(skill => {
-                                const checkbox = document.querySelector(`.skill-checkbox[value="${skill}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                            setupKnowledgeSkillCounters();
-                        }, 100);
-                    }
-                    document.getElementById('skills-selection-modal').classList.remove('hidden');
+                    openSkillsModal();
                 });
             }
 
@@ -2109,31 +2197,52 @@
             // Event listener para atualizar pontos em tempo real no mobile
             const setupMobilePointsUpdater = () => {
                 const updateMobilePoints = () => {
-                    const positiveChecked = document.querySelectorAll('.positive-trait-checkbox:checked');
-                    const negativeChecked = document.querySelectorAll('.negative-trait-checkbox:checked');
+                    const selectedPositive = [];
+                    const selectedNegative = [];
 
-                    let totalCost = 0;
-
-                    positiveChecked.forEach(checkbox => {
-                        const trait = positiveTraits.find(t => t.name === checkbox.value);
-                        if (trait) totalCost += trait.cost; // cost é negativo para traços positivos
+                    // Coletar traços selecionados dos checkboxes
+                    document.querySelectorAll('.positive-trait-checkbox:checked').forEach(checkbox => {
+                        selectedPositive.push(checkbox.value);
                     });
 
-                    negativeChecked.forEach(checkbox => {
-                        const trait = negativeTraits.find(t => t.name === checkbox.value);
-                        if (trait) totalCost += trait.cost; // cost é positivo para traços negativos
+                    document.querySelectorAll('.negative-trait-checkbox:checked').forEach(checkbox => {
+                        selectedNegative.push(checkbox.value);
                     });
+
+                    // Obter valor de inteligência
+                    let intelligenceValue = 10;
+                    if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.inteligência) {
+                        intelligenceValue = currentAgentData.playerStatus.inteligência;
+                    }
+
+                    // Calcular pontos disponíveis usando a função correta
+                    const availablePoints = calculateAvailablePoints(selectedPositive, selectedNegative, intelligenceValue);
 
                     const pointsSummary = document.getElementById('mobile-points-summary');
                     if (pointsSummary) {
-                        pointsSummary.textContent = totalCost;
-                        pointsSummary.className = `text-lg font-bold mt-1 ${totalCost >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                        pointsSummary.textContent = availablePoints;
+                        pointsSummary.className = `text-lg font-bold mt-1 ${availablePoints >= 0 ? 'terminal-text-green' : 'terminal-text-red'}`;
                     }
+
+                    // Atualizar também os pontos disponíveis na ficha principal
+                    const pointsDisplays = document.querySelectorAll('p');
+                    pointsDisplays.forEach(element => {
+                        if (element.textContent.includes('PONTOS DISPONÍVEIS')) {
+                            element.innerHTML = `PONTOS DISPONÍVEIS: ${availablePoints}`;
+                            element.className = `text-lg font-bold ${availablePoints >= 0 ? 'terminal-text-green' : 'terminal-text-red'}`;
+                        }
+                    });
+
+                    console.log('Pontos atualizados em tempo real:', availablePoints);
                 };
 
                 // Adicionar listeners para todos os checkboxes de traços
                 document.querySelectorAll('.positive-trait-checkbox, .negative-trait-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', updateMobilePoints);
+                    checkbox.addEventListener('change', () => {
+                        updateMobilePoints();
+                        updateCharacterSheetCounters(); // Atualizar contadores da ficha principal
+                        updateMobilePointsInModal(); // Atualizar pontos no modal
+                    });
                 });
 
                 // Atualizar pontos inicialmente
@@ -2212,12 +2321,18 @@
 
             // Adicionar listeners para todos os checkboxes de conhecimentos
             document.querySelectorAll('.knowledge-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', updateKnowledgeCounter);
+                checkbox.addEventListener('change', () => {
+                    updateKnowledgeCounter();
+                    updateCharacterSheetCounters(); // Atualizar contadores da ficha principal
+                });
             });
 
             // Adicionar listeners para todos os checkboxes de habilidades
             document.querySelectorAll('.skill-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', updateSkillsCounter);
+                checkbox.addEventListener('change', () => {
+                    updateSkillsCounter();
+                    updateCharacterSheetCounters(); // Atualizar contadores da ficha principal
+                });
             });
 
             // Atualizar contadores inicialmente
@@ -2225,8 +2340,417 @@
             updateSkillsCounter();
         }
 
-        function openTraitsModal() {
+        function setupTraitButtons() {
+            console.log('Configurando botões de traços...');
+            console.log('tempSelectedTraits:', tempSelectedTraits);
+            
+            // Configurar todos os botões de traços
+            const traitButtons = document.querySelectorAll('.trait-toggle-btn');
+            console.log('Botões encontrados:', traitButtons.length);
+            
+            traitButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const traitName = button.getAttribute('data-trait');
+                    const traitType = button.getAttribute('data-type');
+                    
+                    console.log(`Clique no botão: ${traitName} (${traitType})`);
+                    
+                    toggleTraitSelection(traitName, traitType);
+                    updateTraitButtonStates();
+                    updateMobilePointsSummary();
+                });
+            });
+        }
+
+        function toggleTraitSelection(traitName, traitType) {
+            console.log(`Toggling ${traitType} trait: ${traitName}`);
+            
+            if (traitType === 'positive') {
+                const index = tempSelectedTraits.positive.indexOf(traitName);
+                if (index > -1) {
+                    // Remover se já selecionado
+                    tempSelectedTraits.positive.splice(index, 1);
+                } else {
+                    // Adicionar se não selecionado
+                    tempSelectedTraits.positive.push(traitName);
+                }
+            } else if (traitType === 'negative') {
+                const index = tempSelectedTraits.negative.indexOf(traitName);
+                if (index > -1) {
+                    // Remover se já selecionado
+                    tempSelectedTraits.negative.splice(index, 1);
+                } else {
+                    // Adicionar se não selecionado
+                    tempSelectedTraits.negative.push(traitName);
+                }
+            }
+        }
+
+        function updateTraitButtonStates() {
+            console.log('Atualizando estados dos botões...');
+            console.log('Traços positivos selecionados:', tempSelectedTraits.positive);
+            console.log('Traços negativos selecionados:', tempSelectedTraits.negative);
+            
+            // Atualizar botões de traços positivos
+            const positiveButtons = document.querySelectorAll('.positive-trait-btn');
+            console.log('Botões positivos encontrados:', positiveButtons.length);
+            
+            positiveButtons.forEach(button => {
+                const traitName = button.getAttribute('data-trait');
+                const isSelected = tempSelectedTraits.positive.includes(traitName);
+                
+                console.log(`Botão ${traitName}: ${isSelected ? 'selecionado' : 'não selecionado'}`);
+                
+                if (isSelected) {
+                    button.textContent = '−';
+                    button.className = 'trait-toggle-btn positive-trait-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-red-600 hover:bg-red-500 text-white';
+                    button.title = 'Clique para remover';
+                } else {
+                    button.textContent = '+';
+                    button.className = 'trait-toggle-btn positive-trait-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-green-600 hover:bg-green-500 text-white';
+                    button.title = 'Clique para adicionar';
+                }
+            });
+            
+            // Atualizar botões de traços negativos
+            const negativeButtons = document.querySelectorAll('.negative-trait-btn');
+            console.log('Botões negativos encontrados:', negativeButtons.length);
+            
+            negativeButtons.forEach(button => {
+                const traitName = button.getAttribute('data-trait');
+                const isSelected = tempSelectedTraits.negative.includes(traitName);
+                
+                if (isSelected) {
+                    button.textContent = '−';
+                    button.className = 'trait-toggle-btn negative-trait-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-red-600 hover:bg-red-500 text-white';
+                    button.title = 'Clique para remover';
+                } else {
+                    button.textContent = '+';
+                    button.className = 'trait-toggle-btn negative-trait-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-green-600 hover:bg-green-500 text-white';
+                    button.title = 'Clique para adicionar';
+                }
+            });
+            
+            // Ajustar tamanho dos botões no mobile
+            document.querySelectorAll('.trait-toggle-btn').forEach(button => {
+                if (window.innerWidth <= 768) {
+                    button.className = button.className.replace('w-8 h-8', 'w-10 h-10');
+                }
+            });
+        }
+
+        function setupMobilePointsUpdaterForTraits() {
+            // Atualizar contadores quando os traços são selecionados
+            const updateCounters = () => {
+                updateMobilePointsSummary();
+            };
+            
+            // Chamar uma vez para inicializar
+            updateCounters();
+        }
+
+        function updateMobilePointsSummary() {
+            const summaryElement = document.getElementById('mobile-points-summary');
+            if (!summaryElement) return;
+            
+            try {
+                let totalCost = 0;
+                
+                // Calcular custos dos traços positivos selecionados
+                tempSelectedTraits.positive.forEach(traitName => {
+                    const trait = positiveTraits.find(t => t.name === traitName);
+                    if (trait) {
+                        totalCost += trait.cost;
+                    }
+                });
+                
+                // Calcular pontos dos traços negativos selecionados
+                tempSelectedTraits.negative.forEach(traitName => {
+                    const trait = negativeTraits.find(t => t.name === traitName);
+                    if (trait) {
+                        totalCost -= trait.cost; // Traços negativos concedem pontos
+                    }
+                });
+                
+                // Atualizar display
+                summaryElement.textContent = totalCost > 0 ? `-${totalCost}` : totalCost === 0 ? '0' : `+${Math.abs(totalCost)}`;
+                
+                // Colorir baseado no valor
+                if (totalCost > 0) {
+                    summaryElement.className = 'text-lg font-bold mt-1 text-red-400';
+                } else if (totalCost < 0) {
+                    summaryElement.className = 'text-lg font-bold mt-1 text-green-400';
+                } else {
+                    summaryElement.className = 'text-lg font-bold mt-1 text-blue-400';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar resumo de pontos:', error);
+                summaryElement.textContent = '0';
+                summaryElement.className = 'text-lg font-bold mt-1 text-blue-400';
+            }
+        }
+
+        // Funções para gerenciar conhecimentos
+        function setupKnowledgeButtons() {
+            console.log('Configurando botões de conhecimentos...');
+            console.log('tempSelectedKnowledge:', tempSelectedKnowledge);
+            
+            const knowledgeButtons = document.querySelectorAll('.knowledge-toggle-btn');
+            console.log('Botões de conhecimentos encontrados:', knowledgeButtons.length);
+            
+            knowledgeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const knowledgeName = button.getAttribute('data-knowledge');
+                    
+                    console.log(`Clique no botão de conhecimento: ${knowledgeName}`);
+                    
+                    toggleKnowledgeSelection(knowledgeName);
+                    updateKnowledgeButtonStates();
+                    updateKnowledgeCounter();
+                });
+            });
+        }
+
+        function toggleKnowledgeSelection(knowledgeName) {
+            console.log(`Toggling knowledge: ${knowledgeName}`);
+            
+            const index = tempSelectedKnowledge.indexOf(knowledgeName);
+            if (index > -1) {
+                // Remover se já selecionado
+                tempSelectedKnowledge.splice(index, 1);
+            } else {
+                // Verificar limite antes de adicionar
+                if (tempSelectedKnowledge.length < 3) {
+                    tempSelectedKnowledge.push(knowledgeName);
+                } else {
+                    console.log('Limite de conhecimentos atingido (3)');
+                    return; // Não adicionar se exceder o limite
+                }
+            }
+        }
+
+        function updateKnowledgeButtonStates() {
+            console.log('Atualizando estados dos botões de conhecimentos...');
+            console.log('Conhecimentos selecionados:', tempSelectedKnowledge);
+            
+            const knowledgeButtons = document.querySelectorAll('.knowledge-toggle-btn');
+            const limitReached = tempSelectedKnowledge.length >= 3;
+            
+            knowledgeButtons.forEach(button => {
+                const knowledgeName = button.getAttribute('data-knowledge');
+                const isSelected = tempSelectedKnowledge.includes(knowledgeName);
+                
+                if (isSelected) {
+                    button.textContent = '−';
+                    button.className = 'knowledge-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-red-600 hover:bg-red-500 text-white';
+                    button.title = 'Clique para remover';
+                    button.disabled = false;
+                } else if (limitReached) {
+                    button.textContent = '+';
+                    button.className = 'knowledge-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-gray-600 text-gray-400 cursor-not-allowed';
+                    button.title = 'Limite de conhecimentos atingido';
+                    button.disabled = true;
+                } else {
+                    button.textContent = '+';
+                    button.className = 'knowledge-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-blue-600 hover:bg-blue-500 text-white';
+                    button.title = 'Clique para adicionar';
+                    button.disabled = false;
+                }
+            });
+        }
+
+        function updateKnowledgeCounter() {
+            const counterElement = document.getElementById('knowledge-counter');
+            if (counterElement) {
+                counterElement.textContent = `${tempSelectedKnowledge.length} / 3`;
+                
+                // Colorir baseado na proximidade do limite
+                if (tempSelectedKnowledge.length >= 3) {
+                    counterElement.className = 'text-lg font-bold mt-1 text-red-400';
+                } else if (tempSelectedKnowledge.length >= 2) {
+                    counterElement.className = 'text-lg font-bold mt-1 text-yellow-400';
+                } else {
+                    counterElement.className = 'text-lg font-bold mt-1 text-blue-400';
+                }
+            }
+        }
+
+        // Funções para gerenciar habilidades
+        function setupSkillsButtons() {
+            console.log('Configurando botões de habilidades...');
+            console.log('tempSelectedSkills:', tempSelectedSkills);
+            
+            const skillsButtons = document.querySelectorAll('.skill-toggle-btn');
+            console.log('Botões de habilidades encontrados:', skillsButtons.length);
+            
+            skillsButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const skillName = button.getAttribute('data-skill');
+                    
+                    console.log(`Clique no botão de habilidade: ${skillName}`);
+                    
+                    toggleSkillSelection(skillName);
+                    updateSkillsButtonStates();
+                    updateSkillsCounter();
+                });
+            });
+        }
+
+        function toggleSkillSelection(skillName) {
+            console.log(`Toggling skill: ${skillName}`);
+            
+            const index = tempSelectedSkills.indexOf(skillName);
+            if (index > -1) {
+                // Remover se já selecionado
+                tempSelectedSkills.splice(index, 1);
+            } else {
+                // Verificar limite antes de adicionar
+                if (tempSelectedSkills.length < 12) {
+                    tempSelectedSkills.push(skillName);
+                } else {
+                    console.log('Limite de habilidades atingido (12)');
+                    return; // Não adicionar se exceder o limite
+                }
+            }
+        }
+
+        function updateSkillsButtonStates() {
+            console.log('Atualizando estados dos botões de habilidades...');
+            console.log('Habilidades selecionadas:', tempSelectedSkills);
+            
+            const skillsButtons = document.querySelectorAll('.skill-toggle-btn');
+            const limitReached = tempSelectedSkills.length >= 12;
+            
+            skillsButtons.forEach(button => {
+                const skillName = button.getAttribute('data-skill');
+                const isSelected = tempSelectedSkills.includes(skillName);
+                
+                if (isSelected) {
+                    button.textContent = '−';
+                    button.className = 'skill-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-red-600 hover:bg-red-500 text-white';
+                    button.title = 'Clique para remover';
+                    button.disabled = false;
+                } else if (limitReached) {
+                    button.textContent = '+';
+                    button.className = 'skill-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-gray-600 text-gray-400 cursor-not-allowed';
+                    button.title = 'Limite de habilidades atingido';
+                    button.disabled = true;
+                } else {
+                    button.textContent = '+';
+                    button.className = 'skill-toggle-btn flex-shrink-0 w-8 h-8 rounded text-sm font-bold transition-colors bg-yellow-600 hover:bg-yellow-500 text-white';
+                    button.title = 'Clique para adicionar';
+                    button.disabled = false;
+                }
+            });
+        }
+
+        function updateSkillsCounter() {
+            const counterElement = document.getElementById('skills-counter');
+            if (counterElement) {
+                counterElement.textContent = `${tempSelectedSkills.length} / 12`;
+                
+                // Colorir baseado na proximidade do limite
+                if (tempSelectedSkills.length >= 12) {
+                    counterElement.className = 'text-lg font-bold mt-1 text-red-400';
+                } else if (tempSelectedSkills.length >= 10) {
+                    counterElement.className = 'text-lg font-bold mt-1 text-yellow-400';
+                } else {
+                    counterElement.className = 'text-lg font-bold mt-1 text-yellow-400';
+                }
+            }
+        }
+
+        async function openTraitsModal() {
+            console.log('Abrindo modal de traços...');
+            
+            // Refresh dos dados antes de abrir o modal
+            const agentId = currentAgentId || document.querySelector('[data-agent-id]')?.getAttribute('data-agent-id');
+            if (agentId) {
+                await refreshAgentDataAndUpdateUI(agentId);
+            }
+            
+            // Inicializar seleções temporárias com dados salvos (com verificação de segurança)
+            try {
+                tempSelectedTraits.positive = getCurrentSelectedPositiveTraits();
+                tempSelectedTraits.negative = getCurrentSelectedNegativeTraits();
+            } catch (error) {
+                console.error('Erro ao carregar traços salvos:', error);
+                tempSelectedTraits.positive = [];
+                tempSelectedTraits.negative = [];
+            }
+            
             document.getElementById('traits-selection-modal').classList.remove('hidden');
+            
+            // Configurar botões após renderização
+            setTimeout(() => {
+                setupTraitButtons();
+                updateTraitButtonStates();
+                setupMobilePointsUpdaterForTraits();
+            }, 100);
+        }
+
+        async function openKnowledgeModal() {
+            console.log('Abrindo modal de conhecimentos...');
+            
+            // Refresh dos dados antes de abrir o modal
+            const agentId = currentAgentId || document.querySelector('[data-agent-id]')?.getAttribute('data-agent-id');
+            if (agentId) {
+                await refreshAgentDataAndUpdateUI(agentId);
+            }
+            
+            // Inicializar seleções temporárias com dados salvos (com verificação de segurança)
+            try {
+                tempSelectedKnowledge = getCurrentSelectedKnowledge();
+            } catch (error) {
+                console.error('Erro ao carregar conhecimentos salvos:', error);
+                tempSelectedKnowledge = [];
+            }
+            
+            document.getElementById('knowledge-selection-modal').classList.remove('hidden');
+            
+            // Configurar botões após renderização
+            setTimeout(() => {
+                setupKnowledgeButtons();
+                updateKnowledgeButtonStates();
+                updateKnowledgeCounter();
+            }, 100);
+        }
+
+        async function openSkillsModal() {
+            console.log('Abrindo modal de habilidades...');
+            
+            // Refresh dos dados antes de abrir o modal
+            const agentId = currentAgentId || document.querySelector('[data-agent-id]')?.getAttribute('data-agent-id');
+            if (agentId) {
+                await refreshAgentDataAndUpdateUI(agentId);
+            }
+            
+            // Inicializar seleções temporárias com dados salvos (com verificação de segurança)
+            try {
+                tempSelectedSkills = getCurrentSelectedSkills();
+            } catch (error) {
+                console.error('Erro ao carregar habilidades salvos:', error);
+                tempSelectedSkills = [];
+            }
+            
+            document.getElementById('skills-selection-modal').classList.remove('hidden');
+            
+            // Configurar botões após renderização
+            setTimeout(() => {
+                setupSkillsButtons();
+                updateSkillsButtonStates();
+                updateSkillsCounter();
+            }, 100);
         }
 
         function selectRace(raceKey) {
@@ -2355,19 +2879,42 @@
         }
 
         function saveTraitsSelection() {
+            console.log('Salvando seleção de traços...');
+            console.log('Traços positivos selecionados:', tempSelectedTraits.positive);
+            console.log('Traços negativos selecionados:', tempSelectedTraits.negative);
+            
+            // Verificar se currentAgentData existe e inicializar se necessário
+            if (!currentAgentData) {
+                console.error('currentAgentData é null - inicializando estrutura básica');
+                currentAgentData = {
+                    playerStatus: {
+                        characterSheet: {}
+                    }
+                };
+            }
+            
+            // Salvar dados temporários para o currentAgentData
+            if (!currentAgentData.playerStatus) {
+                currentAgentData.playerStatus = {};
+            }
+            if (!currentAgentData.playerStatus.characterSheet) {
+                currentAgentData.playerStatus.characterSheet = {};
+            }
+            
+            // Atualizar os dados salvos com as seleções temporárias
+            currentAgentData.playerStatus.characterSheet.traçosPositivos = [...tempSelectedTraits.positive];
+            currentAgentData.playerStatus.characterSheet.traçosNegativos = [...tempSelectedTraits.negative];
+            
             // Atualizar exibição dos traços selecionados
-            const selectedPositive = getCurrentSelectedPositiveTraits();
-            const selectedNegative = getCurrentSelectedNegativeTraits();
-
             const positiveContainer = document.getElementById('selected-positive-traits');
             const negativeContainer = document.getElementById('selected-negative-traits');
 
             if (positiveContainer) {
-                positiveContainer.innerHTML = renderSelectedTraits(selectedPositive, 'positive');
+                positiveContainer.innerHTML = renderSelectedTraits(tempSelectedTraits.positive, 'positive');
             }
 
             if (negativeContainer) {
-                negativeContainer.innerHTML = renderSelectedTraits(selectedNegative, 'negative');
+                negativeContainer.innerHTML = renderSelectedTraits(tempSelectedTraits.negative, 'negative');
             }
 
             // Atualizar contadores
@@ -2378,16 +2925,38 @@
         }
 
         function saveKnowledgeSelection() {
-            const selected = getCurrentSelectedKnowledge();
-
-            if (selected.length > 3) {
-                alert('❌ Você pode escolher no máximo 3 conhecimentos!');
+            console.log('Salvando seleção de conhecimentos...');
+            console.log('Conhecimentos selecionados:', tempSelectedKnowledge);
+            
+            if (tempSelectedKnowledge.length > 3) {
+                showAttributeErrorModal('❌ Você pode escolher no máximo 3 conhecimentos!');
                 return;
             }
+            
+            // Verificar se currentAgentData existe e inicializar se necessário
+            if (!currentAgentData) {
+                console.error('currentAgentData é null - inicializando estrutura básica');
+                currentAgentData = {
+                    playerStatus: {
+                        characterSheet: {}
+                    }
+                };
+            }
+            
+            // Salvar dados temporários para o currentAgentData
+            if (!currentAgentData.playerStatus) {
+                currentAgentData.playerStatus = {};
+            }
+            if (!currentAgentData.playerStatus.characterSheet) {
+                currentAgentData.playerStatus.characterSheet = {};
+            }
+            
+            // Atualizar os dados salvos com as seleções temporárias
+            currentAgentData.playerStatus.characterSheet.conhecimentos = [...tempSelectedKnowledge];
 
             const container = document.getElementById('selected-knowledge');
             if (container) {
-                container.innerHTML = renderSelectedKnowledge(selected);
+                container.innerHTML = renderSelectedKnowledge(tempSelectedKnowledge);
             }
 
             updateCharacterSheetCounters();
@@ -2395,16 +2964,38 @@
         }
 
         function saveSkillsSelection() {
-            const selected = getCurrentSelectedSkills();
-
-            if (selected.length > 12) {
-                alert('❌ Você pode escolher no máximo 12 habilidades!');
+            console.log('Salvando seleção de habilidades...');
+            console.log('Habilidades selecionadas:', tempSelectedSkills);
+            
+            if (tempSelectedSkills.length > 12) {
+                showAttributeErrorModal('❌ Você pode escolher no máximo 12 habilidades!');
                 return;
             }
+            
+            // Verificar se currentAgentData existe e inicializar se necessário
+            if (!currentAgentData) {
+                console.error('currentAgentData é null - inicializando estrutura básica');
+                currentAgentData = {
+                    playerStatus: {
+                        characterSheet: {}
+                    }
+                };
+            }
+            
+            // Salvar dados temporários para o currentAgentData
+            if (!currentAgentData.playerStatus) {
+                currentAgentData.playerStatus = {};
+            }
+            if (!currentAgentData.playerStatus.characterSheet) {
+                currentAgentData.playerStatus.characterSheet = {};
+            }
+            
+            // Atualizar os dados salvos com as seleções temporárias
+            currentAgentData.playerStatus.characterSheet.habilidades = [...tempSelectedSkills];
 
             const container = document.getElementById('selected-skills');
             if (container) {
-                container.innerHTML = renderSelectedSkills(selected);
+                container.innerHTML = renderSelectedSkills(tempSelectedSkills);
             }
 
             updateCharacterSheetCounters();
@@ -2502,9 +3093,296 @@
         }
 
         // Função para atualizar contadores em tempo real
-        function updateCharacterSheetCounters() {
+        // Função para pré-marcar checkboxes baseados nos dados salvos do Firebase
+        function preSelectCheckboxesFromFirebase() {
+            if (!currentAgentData || !currentAgentData.playerStatus || !currentAgentData.playerStatus.characterSheet) {
+                console.log('Nenhum dado de ficha encontrado para pré-seleção');
+                return;
+            }
+
+            const characterSheet = currentAgentData.playerStatus.characterSheet;
+            console.log('Pré-marcando checkboxes com dados salvos:', {
+                traçosPositivos: (characterSheet.traçosPositivos && Array.isArray(characterSheet.traçosPositivos)) ? characterSheet.traçosPositivos.length : 0,
+                traçosNegativos: (characterSheet.traçosNegativos && Array.isArray(characterSheet.traçosNegativos)) ? characterSheet.traçosNegativos.length : 0,
+                conhecimentos: (characterSheet.conhecimentos && Array.isArray(characterSheet.conhecimentos)) ? characterSheet.conhecimentos.length : 0,
+                habilidades: (characterSheet.habilidades && Array.isArray(characterSheet.habilidades)) ? characterSheet.habilidades.length : 0
+            });
+
+            // Pré-marcar traços positivos
+            if (characterSheet.traçosPositivos && Array.isArray(characterSheet.traçosPositivos) && characterSheet.traçosPositivos.length > 0) {
+                characterSheet.traçosPositivos.forEach(traitName => {
+                    const checkbox = document.querySelector(`.positive-trait-checkbox[value="${traitName}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        // Disparar evento para atualizar contadores
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Pré-marcar traços negativos
+            if (characterSheet.traçosNegativos && Array.isArray(characterSheet.traçosNegativos) && characterSheet.traçosNegativos.length > 0) {
+                characterSheet.traçosNegativos.forEach(traitName => {
+                    const checkbox = document.querySelector(`.negative-trait-checkbox[value="${traitName}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        // Disparar evento para atualizar contadores
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Pré-marcar conhecimentos
+            if (characterSheet.conhecimentos && Array.isArray(characterSheet.conhecimentos) && characterSheet.conhecimentos.length > 0) {
+                characterSheet.conhecimentos.forEach(knowledgeName => {
+                    const checkbox = document.querySelector(`.knowledge-checkbox[value="${knowledgeName}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        // Disparar evento para atualizar contadores
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Pré-marcar habilidades
+            if (characterSheet.habilidades && Array.isArray(characterSheet.habilidades) && characterSheet.habilidades.length > 0) {
+                characterSheet.habilidades.forEach(skillName => {
+                    const checkbox = document.querySelector(`.skill-checkbox[value="${skillName}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        // Disparar evento para atualizar contadores
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Pré-selecionar sub-raça se houver
+            if (characterSheet.subRaça) {
+                const subraceSelect = document.querySelector('#subrace-select');
+                if (subraceSelect) subraceSelect.value = characterSheet.subRaça;
+            }
+
+            // Atualizar contadores após pré-seleção
+            setTimeout(() => {
+                updateCharacterSheetCounters();
+                updateMobilePointsInModal();
+            }, 100);
+
+            console.log('Pré-seleção de checkboxes concluída');
+        }
+
+        // Função para preservar seleções atuais e adicionar seleções salvas
+        function mergeCurrentAndSavedSelections() {
+            if (!currentAgentData || !currentAgentData.playerStatus || !currentAgentData.playerStatus.characterSheet) {
+                console.log('Nenhum dado de ficha encontrado para mesclagem');
+                return;
+            }
+
+            const characterSheet = currentAgentData.playerStatus.characterSheet;
+            console.log('Mesclando seleções atuais com dados salvos');
+
+            // Mesclar traços positivos
+            if (characterSheet.traçosPositivos && Array.isArray(characterSheet.traçosPositivos) && characterSheet.traçosPositivos.length > 0) {
+                characterSheet.traçosPositivos.forEach(traitName => {
+                    const checkbox = document.querySelector(`.positive-trait-checkbox[value="${traitName}"]`);
+                    if (checkbox && !checkbox.checked) {
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Mesclar traços negativos
+            if (characterSheet.traçosNegativos && Array.isArray(characterSheet.traçosNegativos) && characterSheet.traçosNegativos.length > 0) {
+                characterSheet.traçosNegativos.forEach(traitName => {
+                    const checkbox = document.querySelector(`.negative-trait-checkbox[value="${traitName}"]`);
+                    if (checkbox && !checkbox.checked) {
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Mesclar conhecimentos
+            if (characterSheet.conhecimentos && Array.isArray(characterSheet.conhecimentos) && characterSheet.conhecimentos.length > 0) {
+                characterSheet.conhecimentos.forEach(knowledgeName => {
+                    const checkbox = document.querySelector(`.knowledge-checkbox[value="${knowledgeName}"]`);
+                    if (checkbox && !checkbox.checked) {
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Mesclar habilidades
+            if (characterSheet.habilidades && Array.isArray(characterSheet.habilidades) && characterSheet.habilidades.length > 0) {
+                characterSheet.habilidades.forEach(skillName => {
+                    const checkbox = document.querySelector(`.skill-checkbox[value="${skillName}"]`);
+                    if (checkbox && !checkbox.checked) {
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            // Atualizar contadores após mesclagem
+            setTimeout(() => {
+                updateCharacterSheetCounters();
+                updateMobilePointsInModal();
+            }, 50);
+
+            console.log('Mesclagem de seleções concluída');
+        }
+
+        // Função para atualizar pontos em tempo real no modal
+        function updateMobilePointsInModal() {
+            const mobilePointsSummary = document.getElementById('mobile-points-summary');
+            if (!mobilePointsSummary) return;
+
+            const selectedPositive = getCurrentSelectedPositiveTraits();
+            const selectedNegative = getCurrentSelectedNegativeTraits();
+            
+            // Obter valor de inteligência
+            let intelligenceValue = 10;
+            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.inteligência) {
+                intelligenceValue = currentAgentData.playerStatus.inteligência;
+            }
+
+            const availablePoints = calculateAvailablePoints(selectedPositive, selectedNegative, intelligenceValue);
+            
+            mobilePointsSummary.textContent = availablePoints;
+            mobilePointsSummary.className = `text-lg font-bold mt-1 ${availablePoints >= 0 ? 'terminal-text-green' : 'terminal-text-red'}`;
+            
+            console.log('Pontos atualizados no modal:', availablePoints);
+        }
+
+        // Função para recarregar dados do Firebase e atualizar interface
+        async function refreshAgentDataAndUpdateUI(agentId) {
+            try {
+                console.log('Recarregando dados do Firebase para agente:', agentId);
+                const agentRef = doc(db, "agents", agentId);
+                const agentDoc = await getDoc(agentRef);
+                
+                if (agentDoc.exists()) {
+                    const freshData = agentDoc.data();
+                    
+                    // Atualizar dados globais
+                    if (agentId === currentAgentId) {
+                        currentAgentData = freshData;
+                    }
+                    
+                    // Atualizar todos os displays e contadores
+                    updateCharacterSheetDisplays(freshData);
+                    updateCharacterSheetCounters(freshData);
+                    
+                    console.log('Dados atualizados:', freshData.playerStatus?.characterSheet);
+                    return freshData;
+                } else {
+                    console.error('Agente não encontrado no Firebase');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Erro ao recarregar dados do Firebase:', error);
+                return null;
+            }
+        }
+
+        // Função para atualizar displays da ficha com dados específicos
+        function updateCharacterSheetDisplays(agentData) {
+            if (!agentData || !agentData.playerStatus || !agentData.playerStatus.characterSheet) {
+                console.log('Nenhum dado de ficha encontrado');
+                return;
+            }
+
+            const characterSheet = agentData.playerStatus.characterSheet;
+            console.log('Atualizando displays com dados:', characterSheet);
+
+            // Atualizar displays de itens selecionados
+            if (characterSheet.traçosPositivos && Array.isArray(characterSheet.traçosPositivos) && characterSheet.traçosPositivos.length > 0) {
+                const positiveContainer = document.getElementById('selected-positive-traits');
+                if (positiveContainer) {
+                    positiveContainer.innerHTML = renderSelectedTraits(characterSheet.traçosPositivos, 'positive');
+                    console.log('Traços positivos atualizados:', characterSheet.traçosPositivos);
+                }
+            }
+            
+            if (characterSheet.traçosNegativos && Array.isArray(characterSheet.traçosNegativos) && characterSheet.traçosNegativos.length > 0) {
+                const negativeContainer = document.getElementById('selected-negative-traits');
+                if (negativeContainer) {
+                    negativeContainer.innerHTML = renderSelectedTraits(characterSheet.traçosNegativos, 'negative');
+                    console.log('Traços negativos atualizados:', characterSheet.traçosNegativos);
+                }
+            }
+            
+            if (characterSheet.conhecimentos && Array.isArray(characterSheet.conhecimentos) && characterSheet.conhecimentos.length > 0) {
+                const knowledgeContainer = document.getElementById('selected-knowledge');
+                if (knowledgeContainer) {
+                    knowledgeContainer.innerHTML = renderSelectedKnowledge(characterSheet.conhecimentos);
+                    console.log('Conhecimentos atualizados:', characterSheet.conhecimentos);
+                }
+            }
+            
+            if (characterSheet.habilidades && Array.isArray(characterSheet.habilidades) && characterSheet.habilidades.length > 0) {
+                const skillsContainer = document.getElementById('selected-skills');
+                if (skillsContainer) {
+                    skillsContainer.innerHTML = renderSelectedSkills(characterSheet.habilidades);
+                    console.log('Habilidades atualizadas:', characterSheet.habilidades);
+                }
+            }
+            
+            // Atualizar raça selecionada
+            if (characterSheet.raça) {
+                const raceDisplay = document.getElementById('selected-race-display');
+                if (raceDisplay && window.raceData && window.raceData[characterSheet.raça]) {
+                    raceDisplay.innerHTML = window.raceData[characterSheet.raça].name;
+                    raceDisplay.className = 'p-2 bg-black/30 rounded border border-gray-600 min-h-10 text-center terminal-text-purple';
+                    
+                    const raceBtn = document.getElementById('select-race-btn');
+                    if (raceBtn) {
+                        raceBtn.textContent = 'Alterar Raça';
+                    }
+                }
+            }
+            
+            // Atualizar classe selecionada  
+            if (characterSheet.classe) {
+                const classDisplay = document.getElementById('selected-class-display');
+                if (classDisplay && window.classData && window.classData[characterSheet.classe]) {
+                    classDisplay.innerHTML = window.classData[characterSheet.classe].name;
+                    classDisplay.className = 'p-2 bg-black/30 rounded border border-gray-600 min-h-10 text-center terminal-text-orange';
+                    
+                    const classBtn = document.getElementById('select-class-btn');
+                    if (classBtn) {
+                        classBtn.textContent = 'Alterar Classe';
+                    }
+                }
+            }
+        }
+
+        function updateCharacterSheetCounters(agentData) {
+            // Usar dados específicos se fornecidos, senão usar dados globais
+            const dataToUse = agentData || currentAgentData;
+            
+            let knowledgeCount = 0, skillsCount = 0, positiveCount = 0, negativeCount = 0;
+            let selectedPositiveTraits = [], selectedNegativeTraits = [];
+            let intelligenceValue = 10;
+
+            if (dataToUse && dataToUse.playerStatus && dataToUse.playerStatus.characterSheet) {
+                knowledgeCount = (dataToUse.playerStatus.characterSheet.conhecimentos || []).length;
+                skillsCount = (dataToUse.playerStatus.characterSheet.habilidades || []).length;
+                positiveCount = (dataToUse.playerStatus.characterSheet.traçosPositivos || []).length;
+                negativeCount = (dataToUse.playerStatus.characterSheet.traçosNegativos || []).length;
+                selectedPositiveTraits = dataToUse.playerStatus.characterSheet.traçosPositivos || [];
+                selectedNegativeTraits = dataToUse.playerStatus.characterSheet.traçosNegativos || [];
+                
+                console.log('Contadores atualizados:', { knowledgeCount, skillsCount, positiveCount, negativeCount });
+            }
+
+            if (dataToUse && dataToUse.playerStatus && dataToUse.playerStatus.inteligência) {
+                intelligenceValue = dataToUse.playerStatus.inteligência;
+            }
+
             // Atualizar contador de conhecimentos
-            const knowledgeCount = getCurrentSelectedKnowledge().length;
             const knowledgeCountElement = document.getElementById('knowledge-count');
             if (knowledgeCountElement) {
                 knowledgeCountElement.textContent = knowledgeCount;
@@ -2512,7 +3390,6 @@
             }
 
             // Atualizar contador de habilidades
-            const skillsCount = getCurrentSelectedSkills().length;
             const skillsCountElement = document.getElementById('skills-count');
             if (skillsCountElement) {
                 skillsCountElement.textContent = skillsCount;
@@ -2520,28 +3397,17 @@
             }
 
             // Atualizar contadores de traços
-            const positiveCount = getCurrentSelectedPositiveTraits().length;
             const positiveCountElement = document.getElementById('positive-traits-count');
             if (positiveCountElement) {
                 positiveCountElement.textContent = positiveCount;
             }
 
-            const negativeCount = getCurrentSelectedNegativeTraits().length;
             const negativeCountElement = document.getElementById('negative-traits-count');
             if (negativeCountElement) {
                 negativeCountElement.textContent = negativeCount;
             }
 
-            // Obter valor atual de inteligência do agente
-            let intelligenceValue = 10; // Valor padrão
-            if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.inteligência) {
-                intelligenceValue = currentAgentData.playerStatus.inteligência;
-            }
-
-            // Atualizar pontos disponíveis
-            const selectedPositiveTraits = getCurrentSelectedPositiveTraits();
-            const selectedNegativeTraits = getCurrentSelectedNegativeTraits();
-
+            // Calcular e atualizar pontos disponíveis
             const availablePoints = calculateAvailablePoints(selectedPositiveTraits, selectedNegativeTraits, intelligenceValue);
 
             // Atualizar display de pontos se existir
@@ -2557,11 +3423,26 @@
         // Função para salvar ficha do personagem
         async function saveCharacterSheet(agentId) {
             try {
-                // Validar pontos disponíveis
+                console.log('Salvando ficha do personagem para agentId:', agentId);
+                
+                // Obter dados existentes da ficha
+                let existingCharacterSheet = {};
+                if (currentAgentData && currentAgentData.playerStatus && currentAgentData.playerStatus.characterSheet) {
+                    existingCharacterSheet = { ...currentAgentData.playerStatus.characterSheet };
+                }
+
+                // Coletar dados das seleções (as funções já verificam dados salvos)
                 const selectedPositiveTraits = getCurrentSelectedPositiveTraits();
                 const selectedNegativeTraits = getCurrentSelectedNegativeTraits();
                 const selectedKnowledge = getCurrentSelectedKnowledge();
                 const selectedSkills = getCurrentSelectedSkills();
+
+                console.log('Dados coletados para salvar:', {
+                    selectedPositiveTraits,
+                    selectedNegativeTraits,
+                    selectedKnowledge,
+                    selectedSkills
+                });
 
                 // Obter valor de inteligência para calcular pontos disponíveis
                 let intelligenceValue = 10; // Valor padrão
@@ -2572,40 +3453,70 @@
                 const availablePoints = calculateAvailablePoints(selectedPositiveTraits, selectedNegativeTraits, intelligenceValue);
 
                 if (availablePoints < 0) {
-                    alert('❌ Pontos insuficientes! Você não pode ter pontos negativos. Remova alguns traços positivos ou adicione traços negativos.');
+                    showErrorModal('❌ Pontos insuficientes! Você não pode ter pontos negativos. Remova alguns traços positivos ou adicione traços negativos.');
                     return;
                 }
 
                 if (selectedKnowledge.length > 3) {
-                    alert('❌ Você pode escolher no máximo 3 conhecimentos!');
+                    showErrorModal('❌ Você pode escolher no máximo 3 conhecimentos!');
                     return;
                 }
 
                 if (selectedSkills.length > 12) {
-                    alert('❌ Você pode escolher no máximo 12 habilidades!');
+                    showErrorModal('❌ Você pode escolher no máximo 12 habilidades!');
                     return;
                 }
 
-                // Coletar dados da ficha
+                // Coletar dados da ficha preservando dados existentes
                 const characterSheet = {
-                    história: document.getElementById('character-history').value,
-                    foto: document.getElementById('character-photo').value,
-                    raça: window.currentCharacterData?.selectedRace || getCurrentSelectedRace(),
-                    subRaça: getCurrentSelectedSubrace(),
-                    classe: window.currentCharacterData?.selectedClass || getCurrentSelectedClass(),
-                    traçosPositivos: getCurrentSelectedPositiveTraits(),
-                    traçosNegativos: getCurrentSelectedNegativeTraits(),
-                    conhecimentos: getCurrentSelectedKnowledge(),
-                    habilidades: getCurrentSelectedSkills(),
-                    pontosDisponíveis: availablePoints
+                    ...existingCharacterSheet, // Preservar todos os dados existentes
+                    // Sempre atualizar as seleções com os dados mais recentes
+                    traçosPositivos: selectedPositiveTraits,
+                    traçosNegativos: selectedNegativeTraits,
+                    conhecimentos: selectedKnowledge,
+                    habilidades: selectedSkills
                 };
+
+                // Atualizar apenas campos que foram modificados
+                const historyInput = document.getElementById('character-history');
+                if (historyInput && historyInput.value.trim() !== '') {
+                    characterSheet.história = historyInput.value;
+                }
+
+                const photoInput = document.getElementById('character-photo');
+                if (photoInput && photoInput.value.trim() !== '') {
+                    characterSheet.foto = photoInput.value;
+                }
+
+                // Atualizar raça apenas se selecionada
+                const selectedRace = window.currentCharacterData?.selectedRace || getCurrentSelectedRace();
+                if (selectedRace) {
+                    characterSheet.raça = selectedRace;
+                }
+
+                // Atualizar sub-raça apenas se selecionada
+                const selectedSubrace = getCurrentSelectedSubrace();
+                if (selectedSubrace) {
+                    characterSheet.subRaça = selectedSubrace;
+                }
+
+                // Atualizar classe apenas se selecionada  
+                const selectedClass = window.currentCharacterData?.selectedClass || getCurrentSelectedClass();
+                if (selectedClass) {
+                    characterSheet.classe = selectedClass;
+                }
+
+                // Sempre atualizar pontos disponíveis com o cálculo atual
+                characterSheet.pontosDisponíveis = availablePoints;
+
+                console.log('Dados finais da ficha para salvar:', characterSheet);
 
                 // Obter dados atuais do agente
                 const agentRef = doc(db, "agents", agentId);
                 const agentDoc = await getDoc(agentRef);
 
                 if (!agentDoc.exists()) {
-                    alert('❌ Erro: Agente não encontrado no banco de dados.');
+                    showErrorModal('❌ Erro: Agente não encontrado no banco de dados.');
                     return;
                 }
 
@@ -2629,11 +3540,11 @@
                     delete window.currentCharacterData.selectedClass;
                 }
 
-                showSuccessModal('FICHA SALVA COM SUCESSO!', 'Todas as informações do personagem foram atualizadas no sistema ICARUS.');
+                showGeneralSuccessModal('FICHA SALVA COM SUCESSO!', 'Todas as informações do personagem foram atualizadas no sistema ICARUS.');
 
             } catch (error) {
                 console.error('Erro ao salvar ficha do personagem:', error);
-                alert(`❌ Erro ao salvar ficha: ${error.message}`);
+                showErrorModal(`❌ Erro ao salvar ficha: ${error.message}`);
             }
         }
 
@@ -2664,7 +3575,7 @@
                 const agentDoc = await getDoc(agentRef);
 
                 if (!agentDoc.exists()) {
-                    alert('❌ Erro: Agente não encontrado no banco de dados.');
+                    showErrorModal('❌ Erro: Agente não encontrado no banco de dados.');
                     return;
                 }
 
@@ -2691,11 +3602,11 @@
                 // Atualizar campos imediatamente na tela
                 updateCharacterSheetFields(defaultCharacterSheet);
 
-                showSuccessModal('FICHA RESETADA!', 'A ficha do personagem foi resetada com sucesso para os valores padrão.');
+                showGeneralSuccessModal('FICHA RESETADA!', 'A ficha do personagem foi resetada com sucesso para os valores padrão.');
 
             } catch (error) {
                 console.error('Erro ao resetar ficha do personagem:', error);
-                alert(`❌ Erro ao resetar ficha: ${error.message}`);
+                showErrorModal(`❌ Erro ao resetar ficha: ${error.message}`);
             }
         }
 
@@ -3638,13 +4549,13 @@
                 const playerName = playerNameInput.value.trim();
                 
                 if (!agentName) {
-                    alert('Por favor, insira o nome do agente.');
+                showErrorModal('Por favor, insira o nome do agente.');
                     agentNameInput.focus();
                     return;
                 }
                 
                 if (!playerName) {
-                    alert('Por favor, insira o nome do jogador.');
+                showErrorModal('Por favor, insira o nome do jogador.');
                     playerNameInput.focus();
                     return;
                 }
@@ -3663,7 +4574,7 @@
                     await loadAgentData(agentId);
                 } catch (error) {
                     console.error('Erro ao criar agente:', error);
-                    alert('Erro ao criar agente. Tente novamente.');
+                    showErrorModal('Erro ao criar agente. Tente novamente.');
                 }
             }
             
@@ -3916,11 +4827,11 @@
 
                 // Mostrar erro específico para o usuário
                 if (error.code === 'permission-denied') {
-                    alert('Erro de permissão: Você não tem autorização para atualizar este agente. Verifique as regras do Firestore.');
+                    showErrorModal('Erro de permissão: Você não tem autorização para atualizar este agente. Verifique as regras do Firestore.');
                 } else if (error.code === 'not-found') {
-                    alert('Erro: Agente não encontrado no banco de dados.');
+                    showErrorModal('Erro: Agente não encontrado no banco de dados.');
                 } else {
-                    alert(`Erro ao executar ação: ${error.message}`);
+                    showErrorModal(`Erro ao executar ação: ${error.message}`);
                 }
 
                 throw error; // Re-lança o erro para que o código chamador possa tratá-lo
@@ -5616,7 +6527,7 @@
             const description = document.getElementById('mission-description').value;
 
             if (!title.trim() || !description.trim()) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
+                showErrorModal('Por favor, preencha todos os campos obrigatórios.');
                 return;
             }
 
@@ -5631,12 +6542,12 @@
                 const missionRef = doc(db, "system", "mission");
                 await setDoc(missionRef, missionData);
 
-                alert('✅ Missão atualizada com sucesso!');
+                showSuccessModal('✅ Missão atualizada com sucesso!');
                 loadMissionPreview(); // Atualizar preview
                 updateLastModificationTime();
             } catch (error) {
                 console.error('Erro ao atualizar missão:', error);
-                alert('❌ Erro ao atualizar a missão. Verifique sua conexão.');
+                showErrorModal('❌ Erro ao atualizar a missão. Verifique sua conexão.');
             }
         }
 
@@ -5649,7 +6560,7 @@
 
             if (!agentId || agentId.trim() === '') {
                 console.error('ERRO: agentId vazio ou inválido na changeAgentAccessLevel');
-                alert('ERRO: ID do agente não foi capturado corretamente.');
+                showErrorModal('ERRO: ID do agente não foi capturado corretamente.');
                 return;
             }
 
@@ -5665,7 +6576,7 @@
 
             if (!agentId || agentId.trim() === '') {
                 console.error('ERRO: agentId está vazio ou inválido');
-                alert('ERRO: ID do agente inválido.');
+                showErrorModal('ERRO: ID do agente inválido.');
                 return;
             }
 
@@ -5683,7 +6594,7 @@
 
                 if (!agentDoc.exists()) {
                     console.error('Agente não encontrado no Firestore:', agentId);
-                    alert('ERRO: Agente não encontrado.');
+                    showErrorModal('ERRO: Agente não encontrado.');
                     return;
                 }
 
@@ -5699,7 +6610,7 @@
                 // Atualizar no Firebase
                 await updateFirebase(agentId, 'playerStatus', updatedPlayerStatus);
 
-                alert(`✅ SUCESSO!\n\nNível de acesso do agente ${agentId} alterado para:\n${getAccessLevelName(newLevel)}`);
+                showSuccessModal(`✅ SUCESSO!\n\nNível de acesso do agente ${agentId} alterado para:\n${getAccessLevelName(newLevel)}`);
 
                 // Recarregar painel
                 await loadMasterPanel();
@@ -5707,7 +6618,7 @@
             } catch (error) {
                 console.error('Erro ao alterar nível de acesso:', error);
                 console.error('Stack trace:', error.stack);
-                alert(`ERRO ao alterar nível de acesso: ${error.message}`);
+                showErrorModal(`ERRO ao alterar nível de acesso: ${error.message}`);
             }
         }
 
@@ -5921,6 +6832,8 @@
                         const info = parts[2] || 'Sem informações';
                         const extra = parts[3] || '';
 
+                        console.log(`Renderizando item: nome="${name}", categoria="${key}"`);
+
                         let extraDisplay = '';
                         if (key === 'armas' && extra) {
                             extraDisplay = ` | <span class="item-damage">Dano: ${extra}</span>`;
@@ -5928,16 +6841,25 @@
                             extraDisplay = ` | <span class="item-ac">CA: ${extra}</span>`;
                         }
 
-                        return `
+                        // Limitar o tamanho da descrição na visualização do inventário
+                        const maxDescriptionLength = 80;
+                        const shortInfo = info.length > maxDescriptionLength 
+                            ? info.substring(0, maxDescriptionLength) + '...' 
+                            : info;
+
+                        const itemHtml = `
                             <div class="inventory-item p-2 relative group cursor-pointer hover:bg-green-900/30 border border-gray-600 rounded transition-colors mb-1" 
                                  data-item-category="${key}" data-item-name="${name}">
                                 <div class="inventory-item-text font-medium">${name}</div>
                                 <div class="text-xs text-gray-400 mt-1">
                                     <span class="item-level">Nv. ${level}</span> | 
-                                    <span class="item-info">${info}</span>${extraDisplay}
+                                    <span class="item-info" title="${info}">${shortInfo}</span>${extraDisplay}
                                 </div>
                             </div>
                         `;
+                        
+                        console.log(`HTML gerado:`, itemHtml);
+                        return itemHtml;
                     }).join('');
                     if (items.length === 0) itemsHtml = `<div class="p-2 text-gray-500 italic">Vazio</div>`;
 
@@ -5976,13 +6898,19 @@
                     const mpCost = parts[4] || '0';
                     const sanCost = parts[5] || '0';
 
+                    // Limitar o tamanho da descrição na visualização das habilidades
+                    const maxDescriptionLength = 60;
+                    const shortInfo = info.length > maxDescriptionLength 
+                        ? info.substring(0, maxDescriptionLength) + '...' 
+                        : info;
+
                     return `
                         <div class="ability-item p-2 relative group cursor-pointer hover:bg-blue-900/30 border border-gray-600 rounded transition-colors mb-1" 
                              data-ability-category="${key}" data-ability-name="${name}">
                             <div class="ability-item-text font-medium">${name}</div>
                             <div class="text-xs text-gray-400 mt-1">
                                 <span class="ability-level">Nv. ${level}</span> | 
-                                <span class="ability-info">${info}</span> | 
+                                <span class="ability-info" title="${info}">${shortInfo}</span> | 
                                 <span class="ability-cost">Custo: HP ${hpCost} / MP ${mpCost} / SAN ${sanCost}</span>
                             </div>
                         </div>
@@ -6322,7 +7250,7 @@
 
             if (!agentId || agentId.trim() === '') {
                 console.error('ERRO: agentId vazio ou inválido na openChangeAccessModal');
-                alert('ERRO: ID do agente não foi identificado corretamente.');
+                showErrorModal('ERRO: ID do agente não foi identificado corretamente.');
                 return;
             }
 
@@ -6359,7 +7287,7 @@
             const newLevel = parseInt(newLevelSelect.value);
 
             if (newLevel === pendingAccessChange.currentLevel) {
-                alert('O agente já possui este nível de acesso.');
+                showErrorModal('O agente já possui este nível de acesso.');
                 closeChangeAccessModal();
                 return;
             }
@@ -6421,7 +7349,7 @@
 
             if (!agentId || agentId.trim() === '') {
                 console.error('AgentId inválido para modal de ações rápidas');
-                alert('Erro: ID do agente não identificado.');
+                showErrorModal('Erro: ID do agente não identificado.');
                 return;
             }
 
@@ -6561,24 +7489,20 @@
                 modalContent += `
                     <div class="mb-4">
                         <p class="mb-3"><strong>Item atualmente equipado em:</strong> <span class="terminal-text-yellow">${getSlotDisplayName(currentSlot)}</span></p>
-                        <div class="terminal-border p-3 bg-gray-800/50">
-                            <p class="text-sm mb-3">Escolha uma ação:</p>
-                            <div class="space-y-2">
-                                <label class="flex items-center cursor-pointer hover:bg-green-900/30 p-2 rounded">
-                                    <input type="radio" name="equipped-action" value="unequip" class="mr-3 text-green-400" checked>
-                                    <span>🔄 Desequipar (retornar ao inventário)</span>
-                                </label>
-                                <label class="flex items-center cursor-pointer hover:bg-red-900/30 p-2 rounded">
-                                    <input type="radio" name="equipped-action" value="delete" class="mr-3 text-red-400">
-                                    <span class="terminal-text-red">🗑️ Excluir permanentemente</span>
-                                </label>
+                        <div class="terminal-border p-3 bg-green-900/20">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🔄</span>
+                                <div>
+                                    <p class="font-bold terminal-text-green">Desequipar Item</p>
+                                    <p class="text-sm text-gray-400">O item será retornado ao inventário</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
 
                 // Change confirm button text
-                document.getElementById('equip-confirm-btn').textContent = 'Executar';
+                document.getElementById('equip-confirm-btn').textContent = 'Desequipar';
             } else {
                 // Modal for inventory items - show equip and delete options
                 if (category === 'armas') {
@@ -6586,16 +7510,14 @@
                     const currentWeapon = currentStatus.equipped.arma;
                     modalContent += `
                         <div class="mb-4">
-                            <p class="mb-3"><strong>Escolha uma ação:</strong></p>
+                            <p class="mb-3"><strong>Ação:</strong></p>
                             <div class="space-y-2 mb-4">
-                                <label class="flex items-center cursor-pointer hover:bg-green-900/30 p-2 rounded">
-                                    <input type="radio" name="inventory-action" value="equip" class="mr-3 text-green-400" checked>
-                                    <span>⚔️ Equipar no slot de arma</span>
-                                </label>
-                                <label class="flex items-center cursor-pointer hover:bg-red-900/30 p-2 rounded">
-                                    <input type="radio" name="inventory-action" value="delete" class="mr-3 text-red-400">
-                                    <span class="terminal-text-red">🗑️ Excluir permanentemente</span>
-                                </label>
+                                <div class="terminal-border p-3 bg-green-900/20">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xl">⚔️</span>
+                                        <span class="terminal-text-green font-bold">Equipar no slot de arma</span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="terminal-border p-2 bg-gray-800/50">
                                 <p class="mb-1"><strong>Slot de Arma atual:</strong></p>
@@ -6616,16 +7538,14 @@
 
                     modalContent += `
                         <div class="mb-4">
-                            <p class="mb-3"><strong>Escolha uma ação:</strong></p>
+                            <p class="mb-3"><strong>Ação:</strong></p>
                             <div class="space-y-2 mb-4">
-                                <label class="flex items-center cursor-pointer hover:bg-green-900/30 p-2 rounded">
-                                    <input type="radio" name="inventory-action" value="equip" class="mr-3 text-green-400" checked>
-                                    <span>🛡️ Equipar proteção</span>
-                                </label>
-                                <label class="flex items-center cursor-pointer hover:bg-red-900/30 p-2 rounded">
-                                    <input type="radio" name="inventory-action" value="delete" class="mr-3 text-red-400">
-                                    <span class="terminal-text-red">🗑️ Excluir permanentemente</span>
-                                </label>
+                                <div class="terminal-border p-3 bg-green-900/20">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xl">🛡️</span>
+                                        <span class="terminal-text-green font-bold">Equipar proteção</span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div id="equip-slots-section" class="terminal-border p-3 bg-gray-800/50">
@@ -6655,7 +7575,7 @@
                 }
 
                 // Keep default confirm button text
-                document.getElementById('equip-confirm-btn').textContent = 'Executar';
+                document.getElementById('equip-confirm-btn').textContent = 'Equipar';
             }
 
             content.innerHTML = modalContent;
@@ -6721,92 +7641,66 @@
                 const currentStatus = getCurrentAgentData();
 
                 if (currentEquipItem.isEquipped) {
-                    // Handle equipped item actions (unequip or delete)
-                    const selectedAction = document.querySelector('input[name="equipped-action"]:checked');
-                    if (!selectedAction) {
-                        alert('Por favor, selecione uma ação.');
-                        return;
+                    // Handle equipped items - only unequip now
+                    // Unequip item - return to inventory
+                    const targetCategory = (currentEquipItem.targetSlot === 'arma') ? 'armas' : 'protecao';
+                    const currentInv = currentStatus.inventory[targetCategory];
+
+                    if (currentInv && currentInv.trim() !== "" && currentInv !== 'Nenhum') {
+                        currentStatus.inventory[targetCategory] += `<br>${currentEquipItem.name}`;
+                    } else {
+                        currentStatus.inventory[targetCategory] = currentEquipItem.name;
                     }
 
-                    if (selectedAction.value === 'unequip') {
-                        // Unequip item - return to inventory
-                        const targetCategory = (currentEquipItem.targetSlot === 'arma') ? 'armas' : 'protecao';
+                    // Remove from equipped slot
+                    currentStatus.equipped[currentEquipItem.targetSlot] = 'Nenhum';
+
+                    console.log('Item desequipado:', currentEquipItem.name);
+
+                } else {
+                    // Handle inventory item actions - only equip now
+                    // Equip item
+                    let targetSlot = currentEquipItem.targetSlot;
+
+                    // For protection items, get selected slot
+                    if (currentEquipItem.category === 'protecao') {
+                        const selectedSlot = document.querySelector('input[name="equip-slot"]:checked');
+                        if (!selectedSlot) {
+                            showErrorModal('Por favor, selecione onde equipar o item.');
+                            return;
+                        }
+                        targetSlot = selectedSlot.value;
+                    }
+
+                    // Handle old item in the slot (if any)
+                    const oldItem = currentStatus.equipped[targetSlot];
+                    if (oldItem && oldItem !== 'Nenhum') {
+                        const targetCategory = (targetSlot === 'arma') ? 'armas' : 'protecao';
                         const currentInv = currentStatus.inventory[targetCategory];
 
                         if (currentInv && currentInv.trim() !== "" && currentInv !== 'Nenhum') {
-                            currentStatus.inventory[targetCategory] += `<br>${currentEquipItem.name}`;
+                            currentStatus.inventory[targetCategory] += `<br>${oldItem}`;
                         } else {
-                            currentStatus.inventory[targetCategory] = currentEquipItem.name;
+                            currentStatus.inventory[targetCategory] = oldItem;
                         }
-
-                        // Remove from equipped slot
-                        currentStatus.equipped[currentEquipItem.targetSlot] = 'Nenhum';
-
-                        console.log('Item desequipado:', currentEquipItem.name);
-                    } else if (selectedAction.value === 'delete') {
-                        // Delete equipped item permanently
-                        currentStatus.equipped[currentEquipItem.targetSlot] = 'Nenhum';
-                        console.log('Item equipado excluído:', currentEquipItem.name);
                     }
 
-                } else {
-                    // Handle inventory item actions (equip or delete)
-                    const selectedAction = document.querySelector('input[name="inventory-action"]:checked');
-                    if (!selectedAction) {
-                        alert('Por favor, selecione uma ação.');
-                        return;
+                    // Equip new item
+                    currentStatus.equipped[targetSlot] = currentEquipItem.name;
+
+                    // Remove item from inventory
+                    const inventoryItems = (currentStatus.inventory[currentEquipItem.category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                    // Buscar item considerando que pode ter formato "nome|||level|||info|||extra"
+                    const itemIndex = inventoryItems.findIndex(item => {
+                        const itemName = item.split('|||')[0] || item;
+                        return itemName === currentEquipItem.name;
+                    });
+                    if (itemIndex > -1) {
+                        inventoryItems.splice(itemIndex, 1);
+                        currentStatus.inventory[currentEquipItem.category] = inventoryItems.length > 0 ? inventoryItems.join('<br>') : '';
                     }
 
-                    if (selectedAction.value === 'delete') {
-                        // Delete item from inventory
-                        const inventoryItems = (currentStatus.inventory[currentEquipItem.category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
-                        const itemIndex = inventoryItems.findIndex(item => item === currentEquipItem.name);
-                        if (itemIndex > -1) {
-                            inventoryItems.splice(itemIndex, 1);
-                            currentStatus.inventory[currentEquipItem.category] = inventoryItems.length > 0 ? inventoryItems.join('<br>') : '';
-                        }
-                        console.log('Item do inventário excluído:', currentEquipItem.name);
-
-                    } else if (selectedAction.value === 'equip') {
-                        // Equip item
-                        let targetSlot = currentEquipItem.targetSlot;
-
-                        // For protection items, get selected slot
-                        if (currentEquipItem.category === 'protecao') {
-                            const selectedSlot = document.querySelector('input[name="equip-slot"]:checked');
-                            if (!selectedSlot) {
-                                alert('Por favor, selecione onde equipar o item.');
-                                return;
-                            }
-                            targetSlot = selectedSlot.value;
-                        }
-
-                        // Handle old item in the slot (if any)
-                        const oldItem = currentStatus.equipped[targetSlot];
-                        if (oldItem && oldItem !== 'Nenhum') {
-                            const targetCategory = (targetSlot === 'arma') ? 'armas' : 'protecao';
-                            const currentInv = currentStatus.inventory[targetCategory];
-
-                            if (currentInv && currentInv.trim() !== "" && currentInv !== 'Nenhum') {
-                                currentStatus.inventory[targetCategory] += `<br>${oldItem}`;
-                            } else {
-                                currentStatus.inventory[targetCategory] = oldItem;
-                            }
-                        }
-
-                        // Equip new item
-                        currentStatus.equipped[targetSlot] = currentEquipItem.name;
-
-                        // Remove item from inventory
-                        const inventoryItems = (currentStatus.inventory[currentEquipItem.category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
-                        const itemIndex = inventoryItems.findIndex(item => item === currentEquipItem.name);
-                        if (itemIndex > -1) {
-                            inventoryItems.splice(itemIndex, 1);
-                            currentStatus.inventory[currentEquipItem.category] = inventoryItems.length > 0 ? inventoryItems.join('<br>') : '';
-                        }
-
-                        console.log('Item equipado:', currentEquipItem.name, 'no slot:', targetSlot);
-                    }
+                    console.log('Item equipado:', currentEquipItem.name, 'no slot:', targetSlot);
                 }
 
                 // Update Firebase or local data
@@ -6844,8 +7738,1010 @@
                 }
 
                 // Não fechar o modal em caso de erro para que o usuário possa tentar novamente
-                alert(`Erro ao executar ação: ${error.message || error}. Verifique o console para mais detalhes.`);
+                showErrorModal(`Erro ao executar ação: ${error.message || error}. Verifique o console para mais detalhes.`);
             }
+        }
+
+        // --- DELETE ABILITY FUNCTION ---
+        async function deleteAbilityItem(abilityName, category) {
+            console.log('=== deleteAbilityItem chamada ===');
+            console.log('Habilidade:', abilityName, 'Categoria:', category);
+
+            try {
+                const currentStatus = getCurrentAgentData();
+
+                // Buscar e remover a habilidade do inventário de habilidades/magias
+                const abilitiesItems = (currentStatus.abilitiesAndSpells?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                
+                // Buscar item considerando que pode ter formato "nome|||level|||info|||hp|||mp|||san"
+                const abilityIndex = abilitiesItems.findIndex(item => {
+                    const itemName = item.split('|||')[0] || item;
+                    return itemName === abilityName;
+                });
+
+                if (abilityIndex > -1) {
+                    abilitiesItems.splice(abilityIndex, 1);
+                    
+                    // Garantir que abilitiesAndSpells existe
+                    if (!currentStatus.abilitiesAndSpells) {
+                        currentStatus.abilitiesAndSpells = {};
+                    }
+                    
+                    currentStatus.abilitiesAndSpells[category] = abilitiesItems.length > 0 ? abilitiesItems.join('<br>') : '';
+                    console.log('Habilidade excluída com sucesso:', abilityName);
+
+                    // Atualizar Firebase ou dados locais
+                    if (currentAgentId) {
+                        console.log('Atualizando Firebase para agente:', currentAgentId);
+                        await updateFirebase(currentAgentId, 'playerStatus', currentStatus);
+                        console.log('Firebase atualizado com sucesso');
+                    } else {
+                        console.log('Atualizando dados locais (modo demo)');
+                        Object.assign(currentAgentData, currentStatus);
+                    }
+
+                    // Recarregar a view de status se estivermos nela
+                    const statusTitle = contentArea.querySelector('h1');
+                    if (statusTitle && statusTitle.textContent.includes('STATUS DO AGENTE')) {
+                        console.log('Recarregando view de status após exclusão de habilidade');
+                        await loadPlayerStatusView(currentAgentId, currentStatus);
+                    }
+
+                } else {
+                    console.error('Habilidade não encontrada para exclusão:', abilityName);
+                    showErrorModal('Erro: Habilidade não encontrada no inventário.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao excluir habilidade:', error);
+                showErrorModal(`Erro ao excluir habilidade: ${error.message || error}`);
+            }
+        }
+
+        // --- EDIT INVENTORY ITEM FUNCTIONS ---
+        let currentEditInventoryItem = { name: '', category: '', originalData: '' };
+
+        function findItemInInventory(itemName, category, inventoryItems) {
+            // Método 1: Comparação exata
+            let fullItem = inventoryItems.find(item => {
+                const itemBaseName = item.split('|||')[0] || item;
+                return itemBaseName.trim() === itemName.trim();
+            });
+
+            if (fullItem) return fullItem;
+
+            // Método 2: Comparação case-insensitive
+            fullItem = inventoryItems.find(item => {
+                const itemBaseName = item.split('|||')[0] || item;
+                return itemBaseName.trim().toLowerCase() === itemName.trim().toLowerCase();
+            });
+
+            if (fullItem) return fullItem;
+
+            // Método 3: Comparação por partes (em caso de encoding issues)
+            fullItem = inventoryItems.find(item => {
+                const itemBaseName = item.split('|||')[0] || item;
+                return itemBaseName.includes(itemName) || itemName.includes(itemBaseName);
+            });
+
+            return fullItem;
+        }
+
+        function openEditInventoryItemModal(itemName, category) {
+            console.log('🔧 === ABERTURA DO MODAL DE EDIÇÃO ===');
+            console.log('🔧 Parâmetros recebidos:');
+            console.log('   itemName:', `"${itemName}"`);
+            console.log('   category:', `"${category}"`);
+            console.log('   typeof itemName:', typeof itemName);
+            console.log('   typeof category:', typeof category);
+            console.log('   itemName length:', itemName ? itemName.length : 'null/undefined');
+            console.log('   category length:', category ? category.length : 'null/undefined');
+            
+            if (!itemName || !category || itemName === '' || category === '') {
+                console.error('❌ PARÂMETROS INVÁLIDOS!');
+                console.error('   itemName vazio:', !itemName || itemName === '');
+                console.error('   category vazio:', !category || category === '');
+                showErrorModal('Erro: Dados do item não foram fornecidos corretamente.');
+                return;
+            }
+            
+            console.log('Abrindo modal de edição de item:', itemName, category);
+            
+            const currentStatus = getCurrentAgentData();
+            console.log('Status atual:', currentStatus);
+            console.log('Inventário completo:', currentStatus.inventory);
+            console.log('Inventário da categoria:', currentStatus.inventory?.[category]);
+            
+            const inventoryItems = (currentStatus.inventory?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+            console.log('Itens do inventário processados:', inventoryItems);
+            
+            // Usar função de busca robusta
+            const fullItem = findItemInInventory(itemName, category, inventoryItems);
+
+            console.log('Item encontrado:', fullItem);
+
+            if (!fullItem) {
+                console.error('Item não encontrado! itemName:', itemName, 'category:', category);
+                console.error('Itens disponíveis:', inventoryItems);
+                
+                // Tentar buscar em outras categorias para debug
+                console.log('Tentando buscar em outras categorias...');
+                Object.keys(currentStatus.inventory || {}).forEach(cat => {
+                    const items = (currentStatus.inventory[cat] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                    items.forEach(item => {
+                        const name = item.split('|||')[0] || item;
+                        if (name.includes(itemName) || itemName.includes(name)) {
+                            console.log(`Item similar encontrado em ${cat}:`, item);
+                        }
+                    });
+                });
+                
+                showErrorModal(`Item "${itemName}" não encontrado na categoria "${category}".`);
+                return;
+            }
+
+            currentEditInventoryItem = { name: itemName, category: category, originalData: fullItem };
+            
+            // Parse do item (formato: name|||level|||info|||extra|||)
+            const parts = fullItem.split('|||');
+            const name = parts[0] || '';
+            const level = parts[1] || '';
+            const info = parts[2] || '';
+            const extra = parts[3] || '';
+
+            const modal = document.getElementById('edit-inventory-modal');
+            const content = document.getElementById('edit-inventory-content');
+
+            let extraLabel = 'Extra';
+            let extraPlaceholder = 'Informações extras';
+            
+            // Personalizar campos baseado na categoria
+            switch(category) {
+                case 'armas':
+                    extraLabel = 'Dano';
+                    extraPlaceholder = 'Ex: 1d6+1, 2d4, etc.';
+                    break;
+                case 'protecao':
+                    extraLabel = 'CA';
+                    extraPlaceholder = 'Ex: +2, +3, etc.';
+                    break;
+                case 'ferramentas':
+                    extraLabel = 'Tipo';
+                    extraPlaceholder = 'Ex: Eletrônica, Mecânica, etc.';
+                    break;
+                default:
+                    extraLabel = 'Extra';
+                    extraPlaceholder = 'Informações extras';
+            }
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-blue mb-2">Nome:</label>
+                        <input type="text" id="edit-inventory-name" value="${name}" 
+                               class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-blue mb-2">Nível/Qualidade:</label>
+                        <input type="text" id="edit-inventory-level" value="${level}" 
+                               placeholder="Ex: Comum, Raro, +1, etc."
+                               class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-blue mb-2">Descrição:</label>
+                        <textarea id="edit-inventory-info" rows="3" placeholder="Descrição do item"
+                                  class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-blue-500 focus:outline-none resize-vertical">${info}</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-blue mb-2">${extraLabel}:</label>
+                        <input type="text" id="edit-inventory-extra" value="${extra}" 
+                               placeholder="${extraPlaceholder}"
+                               class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div class="terminal-border p-3 bg-gray-800/50">
+                        <p class="text-sm terminal-text-blue mb-2"><strong>Categoria:</strong> ${getCategoryDisplayName(category)}</p>
+                        <p class="text-sm text-gray-400">💡 Dica: Todos os campos são opcionais exceto o nome</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.remove('modal-hidden');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+            
+            // Focar no campo nome
+            setTimeout(() => {
+                document.getElementById('edit-inventory-name').focus();
+            }, 100);
+        }
+
+        function getCategoryDisplayName(category) {
+            const categoryNames = {
+                'armas': 'Armas',
+                'protecao': 'Proteção',
+                'ferramentas': 'Ferramentas',
+                'recursos': 'Recursos',
+                'artefatos': 'Artefatos',
+                'itens': 'Itens Gerais',
+                'reliquias': 'Relíquias'
+            };
+            return categoryNames[category] || category;
+        }
+
+        function closeEditInventoryModal() {
+            const modal = document.getElementById('edit-inventory-modal');
+            modal.classList.add('hidden');
+            modal.classList.add('modal-hidden');
+            modal.classList.remove('modal-visible');
+            modal.style.display = 'none';
+            currentEditInventoryItem = { name: '', category: '', originalData: '' };
+        }
+
+        async function saveInventoryItemFromModal() {
+            console.log('=== saveInventoryItemFromModal chamada ===');
+            
+            const newName = document.getElementById('edit-inventory-name').value.trim();
+            const newLevel = document.getElementById('edit-inventory-level').value.trim();
+            const newInfo = document.getElementById('edit-inventory-info').value.trim();
+            const newExtra = document.getElementById('edit-inventory-extra').value.trim();
+
+            if (!newName) {
+                showErrorModal('O nome do item é obrigatório.');
+                return;
+            }
+
+            try {
+                const currentStatus = getCurrentAgentData();
+                const category = currentEditInventoryItem.category;
+                const originalData = currentEditInventoryItem.originalData;
+                
+                // Construir novo item no formato correto: name|||level|||info|||extra|||
+                const newItemData = [newName, newLevel, newInfo, newExtra]
+                    .map(part => part || '') // Garantir que partes vazias sejam strings vazias
+                    .join('|||');
+                
+                // Buscar e substituir o item no inventário
+                const inventoryItems = (currentStatus.inventory?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                const itemIndex = inventoryItems.findIndex(item => item === originalData);
+
+                if (itemIndex > -1) {
+                    inventoryItems[itemIndex] = newItemData;
+                    
+                    // Garantir que inventory existe
+                    if (!currentStatus.inventory) {
+                        currentStatus.inventory = {};
+                    }
+                    
+                    currentStatus.inventory[category] = inventoryItems.length > 0 ? inventoryItems.join('<br>') : '';
+                    console.log('Item atualizado com sucesso:', newName);
+
+                    // Atualizar Firebase ou dados locais
+                    if (currentAgentId) {
+                        console.log('Atualizando Firebase para agente:', currentAgentId);
+                        await updateFirebase(currentAgentId, 'playerStatus', currentStatus);
+                        console.log('Firebase atualizado com sucesso');
+                    } else {
+                        console.log('Atualizando dados locais (modo demo)');
+                        Object.assign(currentAgentData, currentStatus);
+                    }
+
+                    // Recarregar a view de status se estivermos nela
+                    const statusTitle = contentArea.querySelector('h1');
+                    if (statusTitle && statusTitle.textContent.includes('STATUS DO AGENTE')) {
+                        console.log('Recarregando view de status após edição de item');
+                        await loadPlayerStatusView(currentAgentId, currentStatus);
+                    }
+
+                    closeEditInventoryModal();
+                } else {
+                    console.error('Item original não encontrado para atualização');
+                    showErrorModal('Erro: Item não encontrado no inventário.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao salvar item:', error);
+                showErrorModal(`Erro ao salvar item: ${error.message || error}`);
+            }
+        }
+
+        async function deleteInventoryItemFromModal() {
+            // Show confirmation modal instead of browser confirm
+            showDeleteItemConfirmModal(
+                `Tem certeza que deseja excluir o item "${currentEditInventoryItem.name}"?`,
+                async () => {
+                    try {
+                        const currentStatus = getCurrentAgentData();
+                        const category = currentEditInventoryItem.category;
+                        const originalData = currentEditInventoryItem.originalData;
+                        
+                        // Buscar e remover o item do inventário
+                        const inventoryItems = (currentStatus.inventory?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                        const itemIndex = inventoryItems.findIndex(item => item === originalData);
+
+                        if (itemIndex > -1) {
+                            inventoryItems.splice(itemIndex, 1);
+                            
+                            // Garantir que inventory existe
+                            if (!currentStatus.inventory) {
+                                currentStatus.inventory = {};
+                            }
+                            
+                            currentStatus.inventory[category] = inventoryItems.length > 0 ? inventoryItems.join('<br>') : '';
+                            console.log('Item excluído com sucesso:', currentEditInventoryItem.name);
+
+                            // Atualizar Firebase ou dados locais
+                            if (currentAgentId) {
+                                console.log('Atualizando Firebase para agente:', currentAgentId);
+                                await updateFirebase(currentAgentId, 'playerStatus', currentStatus);
+                                console.log('Firebase atualizado com sucesso');
+                            } else {
+                                console.log('Atualizando dados locais (modo demo)');
+                                Object.assign(currentAgentData, currentStatus);
+                            }
+
+                            // Recarregar a view de status se estivermos nela
+                            const statusTitle = contentArea.querySelector('h1');
+                            if (statusTitle && statusTitle.textContent.includes('STATUS DO AGENTE')) {
+                                console.log('Recarregando view de status após exclusão de item');
+                                await loadPlayerStatusView(currentAgentId, currentStatus);
+                            }
+
+                            closeEditInventoryModal();
+                        } else {
+                            console.error('Item não encontrado para exclusão');
+                            showErrorModal('Erro: Item não encontrado no inventário.');
+                        }
+
+                    } catch (error) {
+                        console.error('Erro ao excluir item:', error);
+                        showErrorModal(`Erro ao excluir item: ${error.message || error}`);
+                    }
+                }
+            );
+        }
+
+        // --- ABILITY DETAILS MODAL FUNCTIONS ---
+        let currentDetailsAbility = { name: '', category: '', fullData: '' };
+
+        function openAbilityDetailsModal(abilityName, category) {
+            console.log('Abrindo modal de detalhes para habilidade:', abilityName, category);
+            
+            const currentStatus = getCurrentAgentData();
+            console.log('Status atual (habilidade detalhes):', currentStatus);
+            console.log('Habilidades completas (detalhes):', currentStatus.abilitiesAndSpells);
+            console.log('Habilidades da categoria (detalhes):', currentStatus.abilitiesAndSpells?.[category]);
+            
+            const abilityItems = (currentStatus.abilitiesAndSpells?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+            console.log('Habilidades da categoria processadas (detalhes):', abilityItems);
+            
+            // Usar função de busca similar à do inventário
+            const fullAbility = findAbilityInList(abilityName, category, abilityItems);
+
+            console.log('Habilidade encontrada (detalhes):', fullAbility);
+
+            if (!fullAbility) {
+                console.error('Habilidade não encontrada! abilityName:', abilityName, 'category:', category);
+                console.error('Habilidades disponíveis (detalhes):', abilityItems);
+                showErrorModal(`Habilidade "${abilityName}" não encontrada na categoria "${category}".`);
+                return;
+            }
+
+            currentDetailsAbility = { name: abilityName, category: category, fullData: fullAbility };
+            
+            // Parse da habilidade (formato: name|||level|||info|||hp|||mp|||san)
+            const parts = fullAbility.split('|||');
+            const name = parts[0] || '';
+            const level = parts[1] || '';
+            const info = parts[2] || '';
+            const hpCost = parts[3] || '0';
+            const mpCost = parts[4] || '0';
+            const sanCost = parts[5] || '0';
+
+            const modal = document.getElementById('ability-details-modal');
+            const content = document.getElementById('ability-details-content');
+
+            const abilitiesCategories = {
+                'armas': 'Combate / Armas',
+                'magias': 'Magias / Poderes',
+                'habilidades': 'Habilidades / Talentos'
+            };
+
+            const categoryIcon = category === 'magias' ? '🔮' : category === 'armas' ? '⚔️' : '🎯';
+
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Cabeçalho da Habilidade -->
+                    <div class="terminal-border p-4 bg-blue-900/20">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl">${categoryIcon}</span>
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold terminal-text-blue">${name}</h2>
+                                <p class="text-lg terminal-text-green">${abilitiesCategories[category] || category}</p>
+                            </div>
+                        </div>
+                        ${level ? `<div class="terminal-border p-2 bg-black/30"><span class="terminal-text-yellow font-bold">Nível:</span> ${level}</div>` : ''}
+                    </div>
+
+                    <!-- Detalhes da Habilidade -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${info ? `
+                            <div class="terminal-border p-4 bg-gray-800/50">
+                                <h3 class="font-bold terminal-text-blue mb-2">📄 Descrição</h3>
+                                <p class="text-gray-300 leading-relaxed">${info}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="terminal-border p-4 bg-gray-800/50">
+                            <h3 class="font-bold terminal-text-blue mb-2">💰 Custos</h3>
+                            <div class="space-y-2">
+                                <p class="text-red-400">❤️ HP: ${hpCost}</p>
+                                <p class="text-blue-400">🔮 MP: ${mpCost}</p>
+                                <p class="text-purple-400">🧠 SAN: ${sanCost}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações Adicionais -->
+                    <div class="terminal-border p-4 bg-purple-900/20">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-sm text-gray-400">Categoria</p>
+                                <p class="font-bold terminal-text-blue">${abilitiesCategories[category] || category}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Nome</p>
+                                <p class="font-bold terminal-text-green">${name}</p>
+                            </div>
+                            ${level ? `
+                                <div>
+                                    <p class="text-sm text-gray-400">Nível</p>
+                                    <p class="font-bold terminal-text-yellow">${level}</p>
+                                </div>
+                            ` : ''}
+                            <div>
+                                <p class="text-sm text-gray-400">Status</p>
+                                <p class="font-bold terminal-text-green">Conhecida</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dicas -->
+                    <div class="terminal-border p-3 bg-gray-800/50">
+                        <p class="text-sm text-gray-400">💡 Escolha uma ação para esta habilidade</p>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="flex flex-wrap gap-3 pt-4">
+                        <button id="ability-details-edit-btn" class="flex-1 min-w-0 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded font-bold transition duration-200 terminal-border">
+                            ✏️ Editar ou Excluir
+                        </button>
+                        <button id="ability-details-close-btn" class="flex-1 min-w-0 bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded font-bold transition duration-200 terminal-border">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.remove('modal-hidden');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+        }
+
+        function closeAbilityDetailsModal() {
+            const modal = document.getElementById('ability-details-modal');
+            modal.classList.add('hidden');
+            modal.classList.add('modal-hidden');
+            modal.classList.remove('modal-visible');
+            modal.style.display = 'none';
+            currentDetailsAbility = { name: '', category: '', fullData: '' };
+        }
+
+        // Função auxiliar para buscar habilidade na lista
+        function findAbilityInList(abilityName, category, abilityItems) {
+            console.log('🔍 Buscando habilidade:', abilityName);
+            console.log('🔍 Na categoria:', category);
+            console.log('🔍 Lista de habilidades:', abilityItems);
+
+            // Busca exata primeiro
+            let found = abilityItems.find(item => {
+                const itemName = item.split('|||')[0];
+                return itemName === abilityName;
+            });
+
+            if (found) {
+                console.log('✅ Encontrado (busca exata):', found);
+                return found;
+            }
+
+            // Busca case-insensitive
+            found = abilityItems.find(item => {
+                const itemName = item.split('|||')[0];
+                return itemName.toLowerCase() === abilityName.toLowerCase();
+            });
+
+            if (found) {
+                console.log('✅ Encontrado (case-insensitive):', found);
+                return found;
+            }
+
+            // Busca parcial
+            found = abilityItems.find(item => {
+                const itemName = item.split('|||')[0];
+                return itemName.toLowerCase().includes(abilityName.toLowerCase()) || 
+                       abilityName.toLowerCase().includes(itemName.toLowerCase());
+            });
+
+            if (found) {
+                console.log('✅ Encontrado (busca parcial):', found);
+                return found;
+            }
+
+            console.error('❌ Habilidade não encontrada!');
+            return null;
+        }
+
+        // --- EDIT ABILITY FUNCTIONS ---
+        let currentEditAbility = { name: '', category: '', originalData: '' };
+
+        function openEditAbilityModal(abilityName, category) {
+            console.log('Abrindo modal de edição de habilidade:', abilityName, category);
+            
+            const currentStatus = getCurrentAgentData();
+            const abilityItems = (currentStatus.abilitiesAndSpells?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+            
+            // Encontrar a habilidade completa
+            const fullAbility = abilityItems.find(item => {
+                const itemBaseName = item.split('|||')[0] || item;
+                return itemBaseName === abilityName;
+            });
+
+            if (!fullAbility) {
+                showErrorModal('Habilidade/magia não encontrada.');
+                return;
+            }
+
+            currentEditAbility = { name: abilityName, category: category, originalData: fullAbility };
+            
+            // Parse da habilidade (formato: name|||level|||info|||hp|||mp|||san)
+            const parts = fullAbility.split('|||');
+            const name = parts[0] || '';
+            const level = parts[1] || '';
+            const info = parts[2] || '';
+            const hp = parts[3] || '';
+            const mp = parts[4] || '';
+            const san = parts[5] || '';
+
+            const modal = document.getElementById('edit-ability-modal');
+            const content = document.getElementById('edit-ability-content');
+
+            const categoryLabel = category === 'habilidades' ? 'HABILIDADE' : 'MAGIA';
+            const categoryIcon = category === 'habilidades' ? '🛠️' : '✨';
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="terminal-border p-3 bg-purple-900/20">
+                        <p class="terminal-text-purple font-bold">${categoryIcon} Editando ${categoryLabel}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-purple mb-2">Nome:</label>
+                        <input type="text" id="edit-ability-name" value="${name}" 
+                               class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-purple-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-purple mb-2">Nível/Grau:</label>
+                        <input type="text" id="edit-ability-level" value="${level}" 
+                               placeholder="Ex: Iniciante, Experiente, Mestre, etc."
+                               class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-purple-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold terminal-text-purple mb-2">Descrição:</label>
+                        <textarea id="edit-ability-info" rows="3" placeholder="Descrição da habilidade/magia"
+                                  class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-purple-500 focus:outline-none resize-vertical">${info}</textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-sm font-bold terminal-text-red mb-2">Custo HP:</label>
+                            <input type="text" id="edit-ability-hp" value="${hp}" 
+                                   placeholder="0"
+                                   class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-red-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold terminal-text-blue mb-2">Custo MP:</label>
+                            <input type="text" id="edit-ability-mp" value="${mp}" 
+                                   placeholder="0"
+                                   class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold terminal-text-purple mb-2">Custo SAN:</label>
+                            <input type="text" id="edit-ability-san" value="${san}" 
+                                   placeholder="0"
+                                   class="w-full p-2 bg-gray-800 border border-gray-600 rounded terminal-text-green focus:border-purple-500 focus:outline-none">
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-border p-3 bg-gray-800/50">
+                        <p class="text-sm text-gray-400">💡 Dica: Apenas o nome é obrigatório. Os custos podem ser deixados em branco se não se aplicarem.</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.remove('modal-hidden');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+            
+            // Focar no campo nome
+            setTimeout(() => {
+                document.getElementById('edit-ability-name').focus();
+            }, 100);
+        }
+
+        function closeEditAbilityModal() {
+            const modal = document.getElementById('edit-ability-modal');
+            modal.classList.add('hidden');
+            modal.classList.add('modal-hidden');
+            modal.classList.remove('modal-visible');
+            modal.style.display = 'none';
+            currentEditAbility = { name: '', category: '', originalData: '' };
+        }
+
+        async function saveAbilityFromModal() {
+            console.log('=== saveAbilityFromModal chamada ===');
+            
+            const newName = document.getElementById('edit-ability-name').value.trim();
+            const newLevel = document.getElementById('edit-ability-level').value.trim();
+            const newInfo = document.getElementById('edit-ability-info').value.trim();
+            const newHp = document.getElementById('edit-ability-hp').value.trim();
+            const newMp = document.getElementById('edit-ability-mp').value.trim();
+            const newSan = document.getElementById('edit-ability-san').value.trim();
+
+            if (!newName) {
+                showErrorModal('O nome da habilidade/magia é obrigatório.');
+                return;
+            }
+
+            try {
+                const currentStatus = getCurrentAgentData();
+                const category = currentEditAbility.category;
+                const originalData = currentEditAbility.originalData;
+                
+                // Construir nova habilidade
+                const newAbilityData = [newName, newLevel, newInfo, newHp, newMp, newSan].filter(part => part !== '').join('|||');
+                
+                // Buscar e substituir a habilidade
+                const abilityItems = (currentStatus.abilitiesAndSpells?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                const abilityIndex = abilityItems.findIndex(item => item === originalData);
+
+                if (abilityIndex > -1) {
+                    abilityItems[abilityIndex] = newAbilityData;
+                    
+                    // Garantir que abilitiesAndSpells existe
+                    if (!currentStatus.abilitiesAndSpells) {
+                        currentStatus.abilitiesAndSpells = {};
+                    }
+                    
+                    currentStatus.abilitiesAndSpells[category] = abilityItems.length > 0 ? abilityItems.join('<br>') : '';
+                    console.log('Habilidade atualizada com sucesso:', newName);
+
+                    // Atualizar Firebase ou dados locais
+                    if (currentAgentId) {
+                        console.log('Atualizando Firebase para agente:', currentAgentId);
+                        await updateFirebase(currentAgentId, 'playerStatus', currentStatus);
+                        console.log('Firebase atualizado com sucesso');
+                    } else {
+                        console.log('Atualizando dados locais (modo demo)');
+                        Object.assign(currentAgentData, currentStatus);
+                    }
+
+                    // Recarregar a view de status se estivermos nela
+                    const statusTitle = contentArea.querySelector('h1');
+                    if (statusTitle && statusTitle.textContent.includes('STATUS DO AGENTE')) {
+                        console.log('Recarregando view de status após edição de habilidade');
+                        await loadPlayerStatusView(currentAgentId, currentStatus);
+                    }
+
+                    closeEditAbilityModal();
+                } else {
+                    console.error('Habilidade original não encontrada para atualização');
+                    showErrorModal('Erro: Habilidade não encontrada.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao salvar habilidade:', error);
+                showErrorModal(`Erro ao salvar habilidade: ${error.message || error}`);
+            }
+        }
+
+        async function deleteAbilityFromModal() {
+            const confirmDelete = confirm(`Tem certeza que deseja excluir a ${currentEditAbility.category === 'habilidades' ? 'habilidade' : 'magia'} "${currentEditAbility.name}"?`);
+            if (!confirmDelete) return;
+
+            try {
+                const currentStatus = getCurrentAgentData();
+                const category = currentEditAbility.category;
+                const originalData = currentEditAbility.originalData;
+                
+                // Buscar e remover a habilidade
+                const abilityItems = (currentStatus.abilitiesAndSpells?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+                const abilityIndex = abilityItems.findIndex(item => item === originalData);
+
+                if (abilityIndex > -1) {
+                    abilityItems.splice(abilityIndex, 1);
+                    
+                    // Garantir que abilitiesAndSpells existe
+                    if (!currentStatus.abilitiesAndSpells) {
+                        currentStatus.abilitiesAndSpells = {};
+                    }
+                    
+                    currentStatus.abilitiesAndSpells[category] = abilityItems.length > 0 ? abilityItems.join('<br>') : '';
+                    console.log('Habilidade excluída com sucesso:', currentEditAbility.name);
+
+                    // Atualizar Firebase ou dados locais
+                    if (currentAgentId) {
+                        console.log('Atualizando Firebase para agente:', currentAgentId);
+                        await updateFirebase(currentAgentId, 'playerStatus', currentStatus);
+                        console.log('Firebase atualizado com sucesso');
+                    } else {
+                        console.log('Atualizando dados locais (modo demo)');
+                        Object.assign(currentAgentData, currentStatus);
+                    }
+
+                    // Recarregar a view de status se estivermos nela
+                    const statusTitle = contentArea.querySelector('h1');
+                    if (statusTitle && statusTitle.textContent.includes('STATUS DO AGENTE')) {
+                        console.log('Recarregando view de status após exclusão de habilidade');
+                        await loadPlayerStatusView(currentAgentId, currentStatus);
+                    }
+
+                    closeEditAbilityModal();
+                } else {
+                    console.error('Habilidade não encontrada para exclusão');
+                    showErrorModal('Erro: Habilidade não encontrada.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao excluir habilidade:', error);
+                showErrorModal(`Erro ao excluir habilidade: ${error.message || error}`);
+            }
+        }
+
+        // --- ITEM ACTION MODAL FUNCTIONS ---
+        let currentActionItem = { name: '', category: '' };
+
+        function openItemActionModal(itemName, category) {
+            console.log('Abrindo modal de ação para item:', itemName, category);
+            
+            currentActionItem = { name: itemName, category: category };
+            
+            const modal = document.getElementById('item-action-modal');
+            const content = document.getElementById('item-action-content');
+
+            const categoryLabel = category === 'armas' ? 'Arma' : 'Proteção';
+            const categoryIcon = category === 'armas' ? '⚔️' : '🛡️';
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="terminal-border p-4 bg-blue-900/20">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl">${categoryIcon}</span>
+                            <div>
+                                <p class="font-bold terminal-text-blue">${itemName}</p>
+                                <p class="text-sm text-gray-400">Categoria: ${categoryLabel}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="terminal-border p-3 bg-green-900/20 hover:bg-green-900/30 cursor-pointer" id="action-equip-option">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">⚔️</span>
+                                <div>
+                                    <p class="font-bold terminal-text-green">Equipar Item</p>
+                                    <p class="text-sm text-gray-400">Equipar este item no seu personagem</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="terminal-border p-3 bg-blue-900/20 hover:bg-blue-900/30 cursor-pointer" id="action-edit-option">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">📝</span>
+                                <div>
+                                    <p class="font-bold terminal-text-blue">Editar ou Excluir Item</p>
+                                    <p class="text-sm text-gray-400">Modificar propriedades ou remover o item</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-border p-3 bg-gray-800/50">
+                        <p class="text-sm text-gray-400">💡 Escolha uma ação para este item</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.remove('modal-hidden');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+        }
+
+        function closeItemActionModal() {
+            const modal = document.getElementById('item-action-modal');
+            modal.classList.add('hidden');
+            modal.classList.add('modal-hidden');
+            modal.classList.remove('modal-visible');
+            modal.style.display = 'none';
+            currentActionItem = { name: '', category: '' };
+        }
+
+        // --- ITEM DETAILS MODAL FUNCTIONS ---
+        let currentDetailsItem = { name: '', category: '', fullData: '' };
+
+        function openItemDetailsModal(itemName, category) {
+            console.log('Abrindo modal de detalhes para item:', itemName, category);
+            
+            const currentStatus = getCurrentAgentData();
+            console.log('Status atual (detalhes):', currentStatus);
+            console.log('Inventário completo (detalhes):', currentStatus.inventory);
+            console.log('Inventário da categoria (detalhes):', currentStatus.inventory?.[category]);
+            
+            const inventoryItems = (currentStatus.inventory?.[category] || '').split('<br>').map(i => i.trim()).filter(i => i && i !== 'Nenhum');
+            console.log('Itens do inventário processados (detalhes):', inventoryItems);
+            
+            // Usar função de busca robusta
+            const fullItem = findItemInInventory(itemName, category, inventoryItems);
+
+            console.log('Item encontrado (detalhes):', fullItem);
+
+            if (!fullItem) {
+                console.error('Item não encontrado! itemName:', itemName, 'category:', category);
+                console.error('Itens disponíveis (detalhes):', inventoryItems);
+                showErrorModal(`Item "${itemName}" não encontrado na categoria "${category}".`);
+                return;
+            }
+
+            currentDetailsItem = { name: itemName, category: category, fullData: fullItem };
+            
+            // Parse do item (formato: name|||level|||info|||extra|||)
+            const parts = fullItem.split('|||');
+            const name = parts[0] || '';
+            const level = parts[1] || '';
+            const info = parts[2] || '';
+            const extra = parts[3] || '';
+
+            const modal = document.getElementById('item-details-modal');
+            const content = document.getElementById('item-details-content');
+
+            let extraLabel = 'Extra';
+            let categoryIcon = '📦';
+            
+            // Personalizar campos baseado na categoria
+            switch(category) {
+                case 'ferramentas':
+                    extraLabel = 'Tipo';
+                    categoryIcon = '🔧';
+                    break;
+                case 'recursos':
+                    extraLabel = 'Quantidade';
+                    categoryIcon = '⚗️';
+                    break;
+                case 'artefatos':
+                    extraLabel = 'Poder';
+                    categoryIcon = '🔮';
+                    break;
+                case 'itens':
+                    extraLabel = 'Detalhes';
+                    categoryIcon = '📋';
+                    break;
+                case 'reliquias':
+                    extraLabel = 'Origem';
+                    categoryIcon = '👑';
+                    break;
+                default:
+                    extraLabel = 'Extra';
+                    categoryIcon = '📦';
+            }
+
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Cabeçalho do Item -->
+                    <div class="terminal-border p-4 bg-green-900/20">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl">${categoryIcon}</span>
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold terminal-text-green">${name}</h2>
+                                <p class="text-lg terminal-text-blue">${getCategoryDisplayName(category)}</p>
+                            </div>
+                        </div>
+                        ${level ? `<div class="terminal-border p-2 bg-black/30"><span class="terminal-text-yellow font-bold">Qualidade:</span> ${level}</div>` : ''}
+                    </div>
+
+                    <!-- Detalhes do Item -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${info ? `
+                            <div class="terminal-border p-4 bg-gray-800/50">
+                                <h3 class="font-bold terminal-text-blue mb-2">📄 Descrição</h3>
+                                <p class="text-gray-300 leading-relaxed">${info}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${extra ? `
+                            <div class="terminal-border p-4 bg-gray-800/50">
+                                <h3 class="font-bold terminal-text-blue mb-2">🔍 ${extraLabel}</h3>
+                                <p class="text-gray-300">${extra}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Informações Adicionais -->
+                    <div class="terminal-border p-4 bg-blue-900/20">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-sm text-gray-400">Categoria</p>
+                                <p class="font-bold terminal-text-blue">${getCategoryDisplayName(category)}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Nome</p>
+                                <p class="font-bold terminal-text-green">${name}</p>
+                            </div>
+                            ${level ? `
+                                <div>
+                                    <p class="text-sm text-gray-400">Qualidade</p>
+                                    <p class="font-bold terminal-text-yellow">${level}</p>
+                                </div>
+                            ` : ''}
+                            <div>
+                                <p class="text-sm text-gray-400">Status</p>
+                                <p class="font-bold terminal-text-green">No Inventário</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dicas -->
+                    <div class="terminal-border p-3 bg-gray-800/50">
+                        <p class="text-sm text-gray-400">💡 Escolha uma ação para este item</p>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="flex flex-wrap gap-3 pt-4">
+                        ${(category === 'armas' || category === 'protecao') ? `
+                            <button id="item-details-equip-btn" class="flex-1 min-w-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold transition duration-200 terminal-border">
+                                ⚔️ Equipar
+                            </button>
+                        ` : ''}
+                        <button id="item-details-edit-btn" class="flex-1 min-w-0 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded font-bold transition duration-200 terminal-border">
+                            ✏️ Editar ou Excluir
+                        </button>
+                        <button id="item-details-close-btn" class="flex-1 min-w-0 bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded font-bold transition duration-200 terminal-border">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.remove('modal-hidden');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+        }
+
+        function closeItemDetailsModal() {
+            const modal = document.getElementById('item-details-modal');
+            modal.classList.add('hidden');
+            modal.classList.add('modal-hidden');
+            modal.classList.remove('modal-visible');
+            modal.style.display = 'none';
+            currentDetailsItem = { name: '', category: '', fullData: '' };
         }
 
         // --- POSTS MODAL FUNCTIONS ---
@@ -6875,13 +8771,6 @@
         }
 
         // --- ATTRIBUTE ERROR MODAL FUNCTIONS ---
-        function showAttributeErrorModal(message) {
-            const modal = document.getElementById('attribute-error-modal');
-            const messageElement = document.getElementById('attribute-error-message');
-            messageElement.textContent = message;
-            modal.classList.remove('hidden');
-        }
-
         function closeAttributeErrorModal() {
             const modal = document.getElementById('attribute-error-modal');
             modal.classList.add('hidden');
@@ -6909,6 +8798,31 @@
                 window.currentPostsConfirmAction();
             }
             closePostsConfirmModal();
+        }
+
+        // --- DELETE ITEM CONFIRMATION MODAL FUNCTIONS ---
+        function showDeleteItemConfirmModal(message, onConfirm) {
+            const modal = document.getElementById('posts-confirm-modal');
+            const messageElement = document.getElementById('posts-confirm-message');
+            messageElement.textContent = message;
+
+            // Store the confirmation callback
+            window.currentDeleteItemConfirmAction = onConfirm;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeDeleteItemConfirmModal() {
+            const modal = document.getElementById('posts-confirm-modal');
+            modal.classList.add('hidden');
+            window.currentDeleteItemConfirmAction = null;
+        }
+
+        function confirmDeleteItemAction() {
+            if (window.currentDeleteItemConfirmAction) {
+                window.currentDeleteItemConfirmAction();
+            }
+            closeDeleteItemConfirmModal();
         }
 
         // --- POSTS MANAGEMENT FUNCTIONS ---
@@ -7261,17 +9175,17 @@
             const content = document.getElementById('new-section-content').value.trim();
 
             if (!name || !key || !content) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
+                showErrorModal('Por favor, preencha todos os campos obrigatórios.');
                 return;
             }
 
             if (staticSections[key]) {
-                alert('Já existe uma seção com essa chave. Use uma chave única.');
+                showErrorModal('Já existe uma seção com essa chave. Use uma chave única.');
                 return;
             }
 
             if (type === 'protected' && !password) {
-                alert('Por favor, defina uma senha para a seção protegida.');
+                showErrorModal('Por favor, defina uma senha para a seção protegida.');
                 return;
             }
 
@@ -7317,13 +9231,13 @@
                 renderNav();
                 loadExistingSections();
 
-                alert('Nova seção criada com sucesso!');
+                showSuccessModal('Nova seção criada com sucesso!');
             } catch (error) {
                 console.error('Erro ao criar seção:', error);
                 if (error.code === 'permission-denied') {
-                    alert('Erro de permissão: As regras do Firestore não permitem criar seções customizadas. Configure as regras do Firestore para permitir acesso à coleção "system".');
+                    showErrorModal('Erro de permissão: As regras do Firestore não permitem criar seções customizadas. Configure as regras do Firestore para permitir acesso à coleção "system".');
                 } else {
-                    alert(`Erro ao criar seção: ${error.message}. Verifique as configurações do Firebase.`);
+                    showErrorModal(`Erro ao criar seção: ${error.message}. Verifique as configurações do Firebase.`);
                 }
             }
         }
@@ -7396,27 +9310,27 @@
             // Verificações de segurança
             if (!key || key.trim() === '') {
                 console.error('Key está vazia ou inválida');
-                alert('Erro: Identificador da seção está vazio.');
+                showErrorModal('Erro: Identificador da seção está vazio.');
                 return;
             }
 
             if (!staticSections) {
                 console.error('staticSections não está definido');
-                alert('Erro: Sistema de seções não está carregado.');
+                showErrorModal('Erro: Sistema de seções não está carregado.');
                 return;
             }
 
             if (!staticSections[key]) {
                 console.error('Seção não encontrada para key:', key);
                 console.error('Keys disponíveis:', Object.keys(staticSections));
-                alert(`Erro: Seção "${key}" não encontrada. Seções disponíveis: ${Object.keys(staticSections).filter(k => k !== 'home' && k !== 'missao_atual' && k !== 'admin').join(', ')}`);
+                showErrorModal(`Erro: Seção "${key}" não encontrada. Seções disponíveis: ${Object.keys(staticSections).filter(k => k !== 'home' && k !== 'missao_atual' && k !== 'admin').join(', ')}`);
                 return;
             }
 
             // Verificar se é uma seção protegida do sistema
             if (key === 'home' || key === 'missao_atual' || key === 'admin') {
                 console.error('Tentativa de excluir seção do sistema:', key);
-                alert('Erro: Não é possível excluir seções do sistema.');
+                showErrorModal('Erro: Não é possível excluir seções do sistema.');
                 return;
             }
 
@@ -7466,16 +9380,16 @@
                 loadExistingSections();
                 console.log('Interface atualizada');
 
-                alert(`Seção "${sectionName}" excluída com sucesso!`);
+                showSuccessModal(`Seção "${sectionName}" excluída com sucesso!`);
             } catch (error) {
                 console.error('Erro detalhado ao excluir seção:', error);
                 console.error('Código do erro:', error.code);
                 console.error('Mensagem do erro:', error.message);
 
                 if (error.code === 'permission-denied') {
-                    alert('Erro de permissão: As regras do Firestore não permitem excluir seções customizadas. Configure as regras do Firestore para permitir acesso à coleção "system".');
+                    showErrorModal('Erro de permissão: As regras do Firestore não permitem excluir seções customizadas. Configure as regras do Firestore para permitir acesso à coleção "system".');
                 } else {
-                    alert(`Erro ao excluir seção: ${error.message}. Verifique as configurações do Firebase e tente novamente.`);
+                    showErrorModal(`Erro ao excluir seção: ${error.message}. Verifique as configurações do Firebase e tente novamente.`);
                 }
             }
         }
@@ -7511,12 +9425,12 @@
             const content = document.getElementById('new-section-content').value.trim();
 
             if (!name || !content) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
+                showErrorModal('Por favor, preencha todos os campos obrigatórios.');
                 return;
             }
 
             if (type === 'protected' && !password) {
-                alert('Por favor, defina uma senha para a seção protegida.');
+                showErrorModal('Por favor, defina uma senha para a seção protegida.');
                 return;
             }
 
@@ -7566,13 +9480,13 @@
                 renderNav();
                 loadExistingSections();
 
-                alert('Seção atualizada com sucesso!');
+                showSuccessModal('Seção atualizada com sucesso!');
             } catch (error) {
                 console.error('Erro ao atualizar seção:', error);
                 if (error.code === 'permission-denied') {
-                    alert('Erro de permissão: As regras do Firestore não permitem atualizar seções customizadas. Configure as regras do Firestore para permitir acesso à coleção "system".');
+                    showErrorModal('Erro de permissão: As regras do Firestore não permitem atualizar seções customizadas. Configure as regras do Firestore para permitir acesso à coleção "system".');
                 } else {
-                    alert(`Erro ao atualizar seção: ${error.message}. Verifique as configurações do Firebase.`);
+                    showErrorModal(`Erro ao atualizar seção: ${error.message}. Verifique as configurações do Firebase.`);
                 }
             }
         }
@@ -7654,7 +9568,7 @@
                 loadExistingSections();
                 console.log('Interface atualizada');
 
-                alert(`Teste: Seção "${sectionName}" removida localmente (sem Firebase)!`);
+                showSuccessModal(`Teste: Seção "${sectionName}" removida localmente (sem Firebase)!`);
                 return true;
             } catch (error) {
                 console.error('Erro no teste de exclusão:', error);
@@ -7676,13 +9590,13 @@
             const info = infoInput.value.trim() || 'Sem informações';
 
             if (!itemName) {
-                alert('Por favor, digite o nome do item.');
+                showErrorModal('Por favor, digite o nome do item.');
                 itemNameInput.focus();
                 return;
             }
 
             if (!category) {
-                alert('Por favor, selecione uma categoria.');
+                showErrorModal('Por favor, selecione uma categoria.');
                 categorySelect.focus();
                 return;
             }
@@ -7708,7 +9622,7 @@
                 if (dropZoneElement) {
                     agentId = dropZoneElement.dataset.agentId;
                 } else {
-                    alert("Erro: Não foi possível identificar o agente.");
+                    showErrorModal("Erro: Não foi possível identificar o agente.");
                     return;
                 }
             }
@@ -7718,7 +9632,7 @@
                 const agentDoc = await getDoc(agentRef);
 
                 if (!agentDoc.exists()) {
-                    alert("Erro: Agente não encontrado no banco de dados.");
+                    showErrorModal("Erro: Agente não encontrado no banco de dados.");
                     return;
                 }
 
@@ -7740,7 +9654,7 @@
 
             } catch (error) {
                 console.error("Erro ao adicionar item:", error);
-                alert("Erro ao adicionar item ao inventário. Tente novamente.");
+                showErrorModal("Erro ao adicionar item ao inventário. Tente novamente.");
             }
         }
 
@@ -7762,13 +9676,13 @@
             const sanCost = sanCostInput.value || '0';
 
             if (!abilityName) {
-                alert('Por favor, digite o nome da habilidade/magia.');
+                showErrorModal('Por favor, digite o nome da habilidade/magia.');
                 abilityNameInput.focus();
                 return;
             }
 
             if (!category) {
-                alert('Por favor, selecione uma categoria.');
+                showErrorModal('Por favor, selecione uma categoria.');
                 categorySelect.focus();
                 return;
             }
@@ -7786,7 +9700,7 @@
                 if (dropZoneElement) {
                     agentId = dropZoneElement.dataset.agentId;
                 } else {
-                    alert("Erro: Não foi possível identificar o agente.");
+                    showErrorModal("Erro: Não foi possível identificar o agente.");
                     return;
                 }
             }
@@ -7796,7 +9710,7 @@
                 const agentDoc = await getDoc(agentRef);
 
                 if (!agentDoc.exists()) {
-                    alert("Erro: Agente não encontrado no banco de dados.");
+                    showErrorModal("Erro: Agente não encontrado no banco de dados.");
                     return;
                 }
 
@@ -7824,12 +9738,12 @@
 
             } catch (error) {
                 console.error("Erro ao adicionar habilidade/magia:", error);
-                alert("Erro ao adicionar habilidade/magia. Tente novamente.");
+                showErrorModal("Erro ao adicionar habilidade/magia. Tente novamente.");
             }
         }
 
         // Função para mostrar modal de sucesso
-        function showSuccessModal(title, message) {
+        function showGeneralSuccessModal(title, message) {
             const modal = document.getElementById('success-modal');
             const titleElement = document.getElementById('success-title');
             const messageElement = document.getElementById('success-message');
@@ -7934,6 +9848,49 @@
             });
 
             let draggedItem = null;
+            
+            // EVENT LISTENER ESPECÍFICO PARA INVENTORY ITEMS - PRIORIDADE MÁXIMA
+            document.addEventListener('click', (e) => {
+                // Capturar cliques em inventory-item com máxima prioridade
+                if (e.target.classList.contains('inventory-item') || e.target.closest('.inventory-item')) {
+                    console.log('🚨 CAPTURA PRIORITÁRIA DE CLIQUE EM INVENTORY-ITEM 🚨');
+                    console.log('Event phase:', e.eventPhase);
+                    console.log('Target:', e.target);
+                    console.log('Target outerHTML:', e.target.outerHTML);
+                    
+                    const itemElement = e.target.classList.contains('inventory-item') ? e.target : e.target.closest('.inventory-item');
+                    console.log('Item element encontrado:', itemElement);
+                    
+                    if (itemElement) {
+                        // Parar propagação para evitar conflitos
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        console.log('📋 TODOS os atributos do elemento:');
+                        Array.from(itemElement.attributes).forEach(attr => {
+                            console.log(`   ${attr.name} = "${attr.value}"`);
+                        });
+                        
+                        const itemName = itemElement.getAttribute('data-item-name');
+                        const category = itemElement.getAttribute('data-item-category');
+                        
+                        console.log('🔍 Dados extraídos:');
+                        console.log('   itemName:', `"${itemName}"`);
+                        console.log('   category:', `"${category}"`);
+                        
+                        if (itemName && category) {
+                            // Sempre abrir modal de detalhes primeiro
+                            console.log('📋 Abrindo modal de detalhes para:', itemName, category);
+                            openItemDetailsModal(itemName, category);
+                        } else {
+                            console.error('❌ Dados vazios! itemName:', itemName, 'category:', category);
+                            showErrorModal('Erro: Dados do item não encontrados');
+                        }
+                    }
+                }
+            }, true); // true = usar capture phase para máxima prioridade
+            
             // MASTER EVENT LISTENER FOR DYNAMIC CONTENT in contentArea
             contentArea.addEventListener('click', async (e) => {
                 // Edit agent button in master panel
@@ -7967,7 +9924,7 @@
                     if (agentId) {
                         await saveCharacterSheet(agentId);
                     } else {
-                        alert('Erro: ID do agente não encontrado.');
+                        showErrorModal('Erro: ID do agente não encontrado.');
                     }
                 }
 
@@ -7978,7 +9935,7 @@
                     if (agentId) {
                         await resetCharacterSheet(agentId);
                     } else {
-                        alert('Erro: ID do agente não encontrado.');
+                        showErrorModal('Erro: ID do agente não encontrado.');
                     }
                 }
 
@@ -7997,23 +9954,165 @@
                     }
                 }
 
-                // Click on inventory item to equip
+                // Click on inventory item to edit or equip
                 if (e.target.matches('.inventory-item') || e.target.closest('.inventory-item')) {
-                    console.log('=== CLIQUE DETECTADO EM ITEM DO INVENTÁRIO ===');
-                    const itemElement = e.target.matches('.inventory-item') ? e.target : e.target.closest('.inventory-item');
-                    const itemName = itemElement.dataset.itemName;
-                    const category = itemElement.dataset.itemCategory;
-                    console.log('Item clicado:', itemName);
-                    console.log('Categoria:', category);
-                    console.log('Element HTML:', itemElement.outerHTML);
-                    console.log('Dataset completo:', itemElement.dataset);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('=== CLIQUE DETECTADO EM ITEM DO INVENTÁRIO (contentArea) ===');
+                    console.log('Target original:', e.target);
+                    console.log('Target HTML:', e.target.outerHTML);
+                    console.log('Target classes:', e.target.className);
+                    
+                    // Primeiro, vamos garantir que temos o elemento correto
+                    let itemElement = null;
+                    
+                    if (e.target.matches('.inventory-item')) {
+                        itemElement = e.target;
+                        console.log('✓ Clique direto no inventory-item');
+                    } else if (e.target.closest('.inventory-item')) {
+                        itemElement = e.target.closest('.inventory-item');
+                        console.log('✓ Clique em elemento filho, encontrou inventory-item pai');
+                    }
+                    
+                    if (!itemElement) {
+                        console.error('❌ Não foi possível encontrar o elemento inventory-item');
+                        return;
+                    }
+                    
+                    console.log('📦 Elemento inventory-item encontrado:', itemElement);
+                    console.log('📦 Classes do elemento:', itemElement.className);
+                    console.log('📦 ID do elemento:', itemElement.id);
+                    console.log('📦 HTML completo do elemento:', itemElement.outerHTML);
+                    
+                    // Listar TODOS os atributos do elemento
+                    console.log('📋 TODOS os atributos do elemento:');
+                    Array.from(itemElement.attributes).forEach(attr => {
+                        console.log(`   ${attr.name} = "${attr.value}"`);
+                    });
+                    
+                    // Tentar diferentes formas de obter os dados
+                    let itemName = itemElement.getAttribute('data-item-name');
+                    let category = itemElement.getAttribute('data-item-category');
+                    
+                    console.log('🔍 itemName (getAttribute):', `"${itemName}"`);
+                    console.log('🔍 category (getAttribute):', `"${category}"`);
+                    
+                    // Tentar também pelo dataset
+                    console.log('🔍 itemName (dataset):', `"${itemElement.dataset.itemName}"`);
+                    console.log('🔍 category (dataset):', `"${itemElement.dataset.itemCategory}"`);
+                    
+                    // Se ainda estão vazios, usar dataset
+                    if (!itemName || itemName === '' || itemName === 'null' || itemName === 'undefined') {
+                        itemName = itemElement.dataset.itemName;
+                        console.log('🔄 Usando dataset para itemName:', `"${itemName}"`);
+                    }
+                    if (!category || category === '' || category === 'null' || category === 'undefined') {
+                        category = itemElement.dataset.itemCategory;
+                        console.log('🔄 Usando dataset para category:', `"${category}"`);
+                    }
+                    
+                    console.log('✅ Valores finais:');
+                    console.log('   itemName:', `"${itemName}"`);
+                    console.log('   category:', `"${category}"`);
+                    
+                    // Se ainda estão vazios, tentar extrair do texto e inferir categoria
+                    if (!itemName || itemName === '' || itemName === 'null' || itemName === 'undefined') {
+                        const textElement = itemElement.querySelector('.inventory-item-text');
+                        if (textElement) {
+                            itemName = textElement.textContent.trim();
+                            console.log('🔄 Extraindo nome do texto:', `"${itemName}"`);
+                        }
+                    }
+                    
+                    // Se categoria ainda está vazia, tentar inferir do contexto
+                    if (!category || category === '' || category === 'null' || category === 'undefined') {
+                        // Procurar categoria pelos elementos pais
+                        let parentElement = itemElement.parentElement;
+                        while (parentElement) {
+                            const categoryAttr = parentElement.getAttribute('data-inventory-category');
+                            if (categoryAttr) {
+                                category = categoryAttr;
+                                console.log('🔄 Categoria encontrada no elemento pai:', `"${category}"`);
+                                break;
+                            }
+                            parentElement = parentElement.parentElement;
+                        }
+                        
+                        // Se ainda não encontrou, tentar pelo texto do cabeçalho da seção
+                        if (!category || category === '') {
+                            const section = itemElement.closest('details');
+                            if (section) {
+                                const summary = section.querySelector('summary');
+                                if (summary) {
+                                    const sectionText = summary.textContent.toLowerCase();
+                                    console.log('🔄 Texto da seção:', sectionText);
+                                    
+                                    if (sectionText.includes('armas')) category = 'armas';
+                                    else if (sectionText.includes('proteção') || sectionText.includes('protecao')) category = 'protecao';
+                                    else if (sectionText.includes('ferramentas')) category = 'ferramentas';
+                                    else if (sectionText.includes('recursos')) category = 'recursos';
+                                    else if (sectionText.includes('artefatos')) category = 'artefatos';
+                                    else if (sectionText.includes('relíquias') || sectionText.includes('reliquias')) category = 'reliquias';
+                                    else if (sectionText.includes('itens')) category = 'itens';
+                                    
+                                    console.log('🔄 Categoria inferida do texto da seção:', `"${category}"`);
+                                }
+                            }
+                        }
+                    }
+                    
+                    console.log('✅ Valores FINAIS após todas as tentativas:');
+                    console.log('   itemName:', `"${itemName}"`);
+                    console.log('   category:', `"${category}"`);
 
-                    if (itemName && category) {
-                        console.log('Chamando openEquipItemModal...');
-                        openEquipItemModal(itemName, category, false);
+                    if (itemName && category && itemName !== '' && category !== '' && itemName !== 'null' && category !== 'null' && itemName !== 'undefined' && category !== 'undefined') {
+                        console.log('🎯 Abrindo modal...');
+                        // Verificar se o item pode ser equipado (armas e proteção)
+                        if (category === 'armas' || category === 'protecao') {
+                            console.log('⚔️ Abrindo modal de ação para item equipável...');
+                            openItemActionModal(itemName, category);
+                        } else {
+                            console.log('📋 Abrindo modal de detalhes do item...');
+                            openItemDetailsModal(itemName, category);
+                        }
                     } else {
-                        console.error('Dados do item não encontrados - itemName:', itemName, 'category:', category);
-                        alert('Erro: Dados do item não encontrados');
+                        console.error('❌ ERRO: Dados do item não encontrados ou vazios!');
+                        console.error('   itemName:', `"${itemName}"`);
+                        console.error('   category:', `"${category}"`);
+                        
+                        // Debug: vamos ver se existem outros elementos inventory-item na página
+                        const allInventoryItems = document.querySelectorAll('.inventory-item');
+                        console.log('🔍 Total de elementos .inventory-item na página:', allInventoryItems.length);
+                        allInventoryItems.forEach((item, index) => {
+                            console.log(`   Item ${index}:`, {
+                                element: item,
+                                html: item.outerHTML,
+                                dataItemName: item.getAttribute('data-item-name'),
+                                dataItemCategory: item.getAttribute('data-item-category'),
+                                hasDatasets: !!item.dataset.itemName
+                            });
+                        });
+                        
+                        showErrorModal('⚠️ Erro: Não foi possível obter os dados do item.\n\nVerifique o console para detalhes técnicos.');
+                    }
+                }
+
+                // Click on ability item to see details
+                if (e.target.matches('.ability-item') || e.target.closest('.ability-item')) {
+                    console.log('=== CLIQUE DETECTADO EM HABILIDADE/MAGIA ===');
+                    const abilityElement = e.target.matches('.ability-item') ? e.target : e.target.closest('.ability-item');
+                    const abilityName = abilityElement.dataset.abilityName;
+                    const category = abilityElement.dataset.abilityCategory;
+                    console.log('Habilidade clicada:', abilityName);
+                    console.log('Categoria:', category);
+
+                    if (abilityName && category) {
+                        console.log('Abrindo modal de detalhes da habilidade/magia...');
+                        openAbilityDetailsModal(abilityName, category);
+                    } else {
+                        console.error('Dados da habilidade não encontrados - abilityName:', abilityName, 'category:', category);
+                        showErrorModal('Erro: Dados da habilidade não encontrados');
                     }
                 }
 
@@ -8046,6 +10145,7 @@
                     equipItemFromModal();
                 }
 
+                // Item action modal buttons (deprecated - now using details modal first) - REMOVIDO DUPLICATA
                 // Admin panel buttons
                 if (e.target.matches('#update-mission-btn')) {
                     updateMission();
@@ -8066,7 +10166,7 @@
                         const checkedKnowledge = document.querySelectorAll('.knowledge-checkbox:checked');
                         if (checkedKnowledge.length > 3) {
                             e.target.checked = false;
-                            alert('❌ Você pode escolher no máximo 3 conhecimentos!');
+                            showErrorModal('❌ Você pode escolher no máximo 3 conhecimentos!');
                             updateCharacterSheetCounters();
                         }
                     }
@@ -8075,7 +10175,7 @@
                         const checkedSkills = document.querySelectorAll('.skill-checkbox:checked');
                         if (checkedSkills.length > 12) {
                             e.target.checked = false;
-                            alert('❌ Você pode escolher no máximo 12 habilidades!');
+                            showErrorModal('❌ Você pode escolher no máximo 12 habilidades!');
                             updateCharacterSheetCounters();
                         }
                     }
@@ -8159,14 +10259,14 @@
 
                         } else {
                             console.error('❌ Agente não encontrado no Firebase');
-                            alert('Erro: Agente não encontrado no banco de dados');
+                            showErrorModal('Erro: Agente não encontrado no banco de dados');
                             e.target.value = '0';
                             updateAttributeDropdowns(agentId);
                         }
 
                     } catch (error) {
                         console.error('❌ Erro ao salvar:', error);
-                        alert(`Erro ao salvar ${stat}: ${error.message}`);
+                        showErrorModal(`Erro ao salvar ${stat}: ${error.message}`);
                         e.target.value = '0';
                         updateAttributeDropdowns(agentId);
                     }
@@ -8279,8 +10379,18 @@
             // Event listeners para os modais de comunicados
             document.getElementById('posts-success-ok-btn').addEventListener('click', closePostsSuccessModal);
             document.getElementById('posts-error-ok-btn').addEventListener('click', closePostsErrorModal);
-            document.getElementById('posts-confirm-cancel-btn').addEventListener('click', closePostsConfirmModal);
-            document.getElementById('posts-confirm-ok-btn').addEventListener('click', confirmPostsAction);
+            document.getElementById('posts-confirm-cancel-btn').addEventListener('click', () => {
+                closePostsConfirmModal();
+                closeDeleteItemConfirmModal();
+            });
+            document.getElementById('posts-confirm-ok-btn').addEventListener('click', () => {
+                // Handle both posts and delete item confirmations
+                if (window.currentPostsConfirmAction) {
+                    confirmPostsAction();
+                } else if (window.currentDeleteItemConfirmAction) {
+                    confirmDeleteItemAction();
+                }
+            });
 
             // Fechar modal ao clicar fora dele
             document.getElementById('add-item-modal').addEventListener('click', (e) => {
@@ -8357,6 +10467,41 @@
                 }
             });
 
+            // Fechar modal de edição de inventário ao clicar fora dele
+            document.getElementById('edit-inventory-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'edit-inventory-modal') {
+                    closeEditInventoryModal();
+                }
+            });
+
+            // Fechar modal de edição de habilidades ao clicar fora dele
+            document.getElementById('edit-ability-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'edit-ability-modal') {
+                    closeEditAbilityModal();
+                }
+            });
+
+            // Fechar modal de ação de item ao clicar fora dele
+            document.getElementById('item-action-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'item-action-modal') {
+                    closeItemActionModal();
+                }
+            });
+
+            // Fechar modal de detalhes de habilidades ao clicar fora dele
+            document.getElementById('ability-details-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'ability-details-modal') {
+                    closeAbilityDetailsModal();
+                }
+            });
+
+            // Fechar modal de detalhes de item ao clicar fora dele
+            document.getElementById('item-details-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'item-details-modal') {
+                    closeItemDetailsModal();
+                }
+            });
+
             // Fechar modal de sucesso ao clicar fora dele ou no botão OK
             document.getElementById('success-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'success-modal') {
@@ -8366,19 +10511,153 @@
 
             document.getElementById('success-ok-btn').addEventListener('click', closeSuccessModal);
 
-            // Event listeners específicos para botões do modal de equipar
-            document.getElementById('equip-cancel-btn').addEventListener('click', (e) => {
-                console.log('Botão cancel clicado diretamente');
-                e.preventDefault();
-                e.stopPropagation();
-                closeEquipItemModal();
-            });
+            // Event listeners para botões de modais que são criados dinamicamente (REMOVIDOS - usando event delegation no contentArea)
 
-            document.getElementById('equip-confirm-btn').addEventListener('click', (e) => {
-                console.log('Botão confirm clicado diretamente');
-                e.preventDefault();
-                e.stopPropagation();
-                equipItemFromModal();
+            // Event listener universal para todos os modais usando document
+            document.addEventListener('click', (e) => {
+                console.log('🔥 Event listener universal ativo - clique detectado em:', e.target.id, e.target.className);
+                
+                // Botões do modal de equipar
+                if (e.target.matches('#equip-cancel-btn')) {
+                    console.log('Botão cancel equipar clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeEquipItemModal();
+                }
+                if (e.target.matches('#equip-confirm-btn')) {
+                    console.log('Botão confirmar equipar clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    equipItemFromModal();
+                }
+
+                // Botões do modal de editar inventário
+                if (e.target.matches('#edit-inventory-cancel-btn')) {
+                    console.log('Botão cancel edição inventário clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeEditInventoryModal();
+                }
+                if (e.target.matches('#edit-inventory-save-btn')) {
+                    console.log('Botão salvar edição inventário clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    saveInventoryItemFromModal();
+                }
+                if (e.target.matches('#edit-inventory-delete-btn')) {
+                    console.log('Botão excluir edição inventário clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    deleteInventoryItemFromModal();
+                }
+
+                // Botões do modal de editar habilidade
+                if (e.target.matches('#edit-ability-cancel-btn')) {
+                    console.log('Botão cancel edição habilidade clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeEditAbilityModal();
+                }
+                if (e.target.matches('#edit-ability-save-btn')) {
+                    console.log('Botão salvar edição habilidade clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    saveAbilityFromModal();
+                }
+                if (e.target.matches('#edit-ability-delete-btn')) {
+                    console.log('Botão excluir edição habilidade clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    deleteAbilityFromModal();
+                }
+
+                // Botões do modal de ação de item
+                if (e.target.matches('#item-action-cancel-btn')) {
+                    console.log('Botão cancel ação item clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeItemActionModal();
+                }
+                if (e.target.matches('#item-action-equip-btn')) {
+                    console.log('Botão equipar ação item clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const itemName = currentActionItem.name;
+                    const category = currentActionItem.category;
+                    
+                    closeItemActionModal();
+                    openEquipItemModal(itemName, category, false);
+                }
+                if (e.target.matches('#item-action-edit-btn')) {
+                    console.log('Botão editar ação item clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const itemName = currentActionItem.name;
+                    const category = currentActionItem.category;
+                    
+                    closeItemActionModal();
+                    openEditInventoryItemModal(itemName, category);
+                }
+
+                // Botões do modal de detalhes de item
+                if (e.target.matches('#item-details-close-btn')) {
+                    console.log('Botão fechar detalhes item clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeItemDetailsModal();
+                }
+                if (e.target.matches('#item-details-edit-btn')) {
+                    console.log('Botão editar detalhes item clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Salvar dados antes de fechar o modal
+                    const itemName = currentDetailsItem.name;
+                    const category = currentDetailsItem.category;
+                    
+                    console.log('Dados salvos antes de fechar modal detalhes:', itemName, category);
+                    
+                    closeItemDetailsModal();
+                    openEditInventoryItemModal(itemName, category);
+                }
+                if (e.target.matches('#item-details-equip-btn')) {
+                    console.log('Botão equipar detalhes item clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Salvar dados antes de fechar o modal
+                    const itemName = currentDetailsItem.name;
+                    const category = currentDetailsItem.category;
+                    
+                    console.log('Dados salvos antes de fechar modal detalhes (equipar):', itemName, category);
+                    
+                    closeItemDetailsModal();
+                    openEquipItemModal(itemName, category, false);
+                }
+
+                // Botões do modal de detalhes de habilidade
+                if (e.target.matches('#ability-details-close-btn')) {
+                    console.log('Botão fechar detalhes habilidade clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeAbilityDetailsModal();
+                }
+                if (e.target.matches('#ability-details-edit-btn')) {
+                    console.log('Botão editar detalhes habilidade clicado');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Salvar dados antes de fechar o modal
+                    const abilityName = currentDetailsAbility.name;
+                    const category = currentDetailsAbility.category;
+                    
+                    console.log('Dados salvos antes de fechar modal detalhes habilidade:', abilityName, category);
+                    
+                    closeAbilityDetailsModal();
+                    openEditAbilityModal(abilityName, category);
+                }
             });
 
             // Permitir adicionar item com Enter
