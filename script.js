@@ -5003,6 +5003,11 @@
 
                 ul.appendChild(li);
             });
+
+            // Update mobile navigation when desktop nav changes
+            if (typeof renderMobileNav === 'function') {
+                renderMobileNav();
+            }
         }
 
         function renderMissionSidebar() {
@@ -10738,12 +10743,22 @@
                         closeMobileSidebar();
                     }
                     // Refresh viewport height calculation
-                    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    
+                    // Force content area recalculation on mobile
+                    if (window.innerWidth <= 768) {
+                        const contentArea = document.getElementById('content-area');
+                        if (contentArea) {
+                            contentArea.style.height = `calc(100vh - 60px)`;
+                        }
+                    }
                 }, 500);
             });
 
             // Set initial viewport height
-            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
 
             // Enhanced touch handling for better mobile experience
             let touchStartY = 0;
@@ -10762,7 +10777,96 @@
                 }
             });
 
-            console.log('Mobile enhancements initialized');
+            // Handle window resize for mobile viewport changes
+            window.addEventListener('resize', () => {
+                if (window.innerWidth <= 768) {
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    
+                    // Update content area height
+                    const contentArea = document.getElementById('content-area');
+                    if (contentArea) {
+                        contentArea.style.height = `calc(100vh - 60px)`;
+                    }
+                }
+            });
+
+            // Prevent iOS bounce scroll
+            document.addEventListener('touchmove', (e) => {
+                const target = e.target;
+                const isScrollable = target.closest('#content-area, #mobile-sidebar .relative, .modal-content');
+                
+                if (!isScrollable) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // Mobile menu button and sidebar functionality
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
+            const mobileSidebarBackdrop = document.getElementById('mobile-sidebar-backdrop');
+
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openMobileSidebar();
+                });
+            }
+
+            if (mobileSidebarClose) {
+                mobileSidebarClose.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeMobileSidebar();
+                });
+            }
+
+            if (mobileSidebarBackdrop) {
+                mobileSidebarBackdrop.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeMobileSidebar();
+                });
+            }
+
+            // Mobile navigation event delegation
+            const mobileNavContainer = document.getElementById('mobile-nav');
+            const mobileContextContainer = document.getElementById('mobile-context-sidebar');
+
+            if (mobileNavContainer) {
+                mobileNavContainer.addEventListener('click', (e) => {
+                    const link = e.target.closest('a[data-section]');
+                    if (link) {
+                        e.preventDefault();
+                        const section = link.dataset.section;
+                        closeMobileSidebar();
+                        loadSection(section);
+                    }
+                });
+            }
+
+            if (mobileContextContainer) {
+                mobileContextContainer.addEventListener('click', (e) => {
+                    const link = e.target.closest('a');
+                    if (link) {
+                        e.preventDefault();
+                        closeMobileSidebar();
+                        
+                        // Handle different types of mobile context links
+                        if (link.id?.includes('character-sheet')) {
+                            loadCharacterSheet(currentAgentId);
+                        } else if (link.id?.includes('status-view')) {
+                            loadPlayerStatusView(currentAgentId, currentAgentData?.playerStatus);
+                        } else if (link.id?.includes('master-panel')) {
+                            loadSection('admin');
+                        } else if (link.id?.includes('players-panel')) {
+                            loadMasterPlayersPanel();
+                        } else if (link.dataset?.section) {
+                            loadSection(link.dataset.section);
+                        }
+                    }
+                });
+            }
+
+            console.log('Mobile sidebar event listeners initialized');
         });
 
         // Inicializar configurações do sistema quando a página carregar
