@@ -1,1332 +1,1355 @@
 /* Estilo base inspirado em terminais CRT antigos */
-        body {
-            font-family: 'Fira+Code', monospace;
-            background-color: #0c0c0c;
-            color: #00ff41;
-            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
-            overflow-x: hidden;
+body {
+    font-family: 'Fira+Code', monospace;
+    background-color: #0c0c0c;
+    color: #00ff41;
+    text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+    overflow-x: hidden;
+}
+
+/* Efeito de scanlines para dar a sensação de monitor antigo */
+body::after {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 100;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+
+/* Animação de cursor piscando */
+.cursor {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+
+    from,
+    to {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: #00ff41;
+    }
+}
+
+/* Estilos para elementos de UI */
+.terminal-border {
+    border: 1px solid #00ff41;
+    box-shadow: 0 0 10px #00ff41 inset;
+}
+
+.terminal-text-red {
+    color: #ff4141;
+    text-shadow: 0 0 5px #ff4141;
+}
+
+.terminal-text-amber {
+    color: #ffb000;
+    text-shadow: 0 0 5px #ffb000;
+}
+
+/* Classes para cores vívidas - sobrescrevem o text-shadow global */
+.text-red-400 {
+    color: red !important;
+    text-shadow: 0 0 8px red, 0 0 15px red !important;
+}
+
+.text-yellow-400 {
+    color: #facc15 !important;
+    text-shadow: 0 0 8px #facc15, 0 0 15px #facc15 !important;
+}
+
+.terminal-text-green {
+    color: #22c55e;
+    text-shadow: 0 0 5px #22c55e;
+}
+
+.terminal-text-blue {
+    color: #3b82f6;
+    text-shadow: 0 0 5px #3b82f6;
+}
+
+/* Classes para níveis de acesso - cores específicas por hierarquia */
+.access-level-0 {
+    color: #6b7280 !important;
+    text-shadow: 0 0 5px #6b7280 !important;
+}
+
+/* Cinza - CIVIS */
+.access-level-1 {
+    color: #22c55e !important;
+    text-shadow: 0 0 5px #22c55e !important;
+}
+
+/* Verde - VÉU */
+.access-level-2 {
+    color: #16a34a !important;
+    text-shadow: 0 0 5px #16a34a !important;
+}
+
+/* Verde escuro - SOMBRA */
+.access-level-3 {
+    color: #15803d !important;
+    text-shadow: 0 0 5px #15803d !important;
+}
+
+/* Verde mais escuro - ECLOSO */
+.access-level-4 {
+    color: #eab308 !important;
+    text-shadow: 0 0 5px #eab308 !important;
+}
+
+/* Amarelo - NECRÓPOLIS */
+.access-level-5 {
+    color: #f59e0b !important;
+    text-shadow: 0 0 8px #f59e0b !important;
+}
+
+/* Laranja - VAULT */
+.access-level-6 {
+    color: #d97706 !important;
+    text-shadow: 0 0 8px #d97706 !important;
+}
+
+/* Laranja escuro - SEPULCRO */
+.access-level-7 {
+    color: #dc2626 !important;
+    text-shadow: 0 0 8px #dc2626 !important;
+}
+
+/* Vermelho - CÁLICE */
+.access-level-8 {
+    color: #b91c1c !important;
+    text-shadow: 0 0 10px #b91c1c !important;
+}
+
+/* Vermelho escuro - TÉMPEL */
+.access-level-9 {
+    color: #7c2d12 !important;
+    text-shadow: 0 0 10px #7c2d12 !important;
+}
+
+/* Vermelho muito escuro - LIMINAR */
+.access-level-10 {
+    color: #8b5cf6 !important;
+    text-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6 !important;
+}
+
+/* Roxo brilhante - ÓRBITA */
+
+.btn {
+    background-color: #00ff41;
+    color: #0c0c0c;
+    text-shadow: none;
+    padding: 4px 8px;
+    border: 1px solid #00ff41;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #33ff6a;
+}
+
+[contenteditable] {
+    outline: none;
+}
+
+[contenteditable]:focus {
+    background-color: rgba(0, 255, 65, 0.1);
+    box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+}
+
+/* Drag and Drop styles */
+.draggable-item {
+    cursor: grab;
+}
+
+.draggable-item:active {
+    cursor: grabbing;
+}
+
+.drop-zone {
+    border: 2px dashed #005a17;
+    min-height: 28px;
+    transition: background-color 0.2s;
+}
+
+.drop-zone.drag-over {
+    background-color: rgba(0, 255, 65, 0.2);
+}
+
+/* Scrollbar customizada - RESTAURADA E MELHORADA */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    /* Para scroll horizontal */
+}
+
+::-webkit-scrollbar-track {
+    background: #0c0c0c;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    box-shadow: 0 0 5px #00ff41;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #33ff6a;
+    box-shadow: 0 0 8px #33ff6a;
+}
+
+/* Scrollbar para Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #00ff41 #0c0c0c;
+}
+
+/* Específico para áreas de conteúdo que precisam de scroll */
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto,
+#main-content,
+.content-area,
+.sidebar,
+#context-sidebar,
+.modal-content,
+.character-sheet-content {
+    scrollbar-width: thin;
+    scrollbar-color: #00ff41 #0c0c0c;
+}
+
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar,
+#main-content::-webkit-scrollbar,
+.content-area::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+#context-sidebar::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+.character-sheet-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.overflow-auto::-webkit-scrollbar-track,
+#main-content::-webkit-scrollbar-track,
+.content-area::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track,
+#context-sidebar::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track,
+.character-sheet-content::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb,
+#main-content::-webkit-scrollbar-thumb,
+.content-area::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb,
+#context-sidebar::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb,
+.character-sheet-content::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+    border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-x-auto::-webkit-scrollbar-thumb:hover,
+.overflow-auto::-webkit-scrollbar-thumb:hover,
+#main-content::-webkit-scrollbar-thumb:hover,
+.content-area::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover,
+#context-sidebar::-webkit-scrollbar-thumb:hover,
+.modal-content::-webkit-scrollbar-thumb:hover,
+.character-sheet-content::-webkit-scrollbar-thumb:hover {
+    background: #33ff6a;
+    box-shadow: 0 0 8px rgba(51, 255, 106, 0.7);
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #0c0c0c;
+    border: 2px solid #00ff41;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 0 20px #00ff41;
+}
+
+.modal-input {
+    background-color: #1a1a1a;
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 100%;
+    font-family: 'Fira Code', monospace;
+}
+
+.modal-input:focus {
+    outline: none;
+    box-shadow: 0 0 5px #00ff41;
+}
+
+.modal-select {
+    background-color: #1a1a1a;
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 100%;
+    font-family: 'Fira Code', monospace;
+}
+
+.modal-select option {
+    background-color: #1a1a1a;
+    color: #00ff41;
+}
+
+/* Styling for attribute dropdowns */
+.player-stat-select {
+    background-color: #1a1a1a !important;
+    border: 1px solid #00ff41 !important;
+    color: #ffb000 !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    font-family: 'Fira Code', monospace !important;
+    font-size: 0.875rem !important;
+    text-shadow: 0 0 3px #ffb000 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 0 5px rgba(0, 255, 65, 0.3) !important;
+}
+
+.player-stat-select:focus {
+    outline: none !important;
+    border-color: #ffb000 !important;
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.5) !important;
+    background-color: #2a2a2a !important;
+}
+
+.player-stat-select:hover {
+    border-color: #ffb000 !important;
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.4) !important;
+    background-color: #252525 !important;
+}
+
+.player-stat-select option {
+    background-color: #1a1a1a !important;
+    color: #ffb000 !important;
+    padding: 4px 8px !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+.player-stat-select option:hover {
+    background-color: #2a2a2a !important;
+}
+
+.player-stat-select option:checked {
+    background-color: #00ff41 !important;
+    color: #0c0c0c !important;
+    font-weight: bold !important;
+}
+
+.modal-btn {
+    background-color: #00ff41;
+    color: #0c0c0c;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Fira Code', monospace;
+    font-weight: bold;
+    margin: 0 5px;
+    transition: background-color 0.2s;
+}
+
+.modal-btn:hover {
+    background-color: #33ff6a;
+}
+
+.modal-btn.cancel {
+    background-color: #666;
+    color: #fff;
+}
+
+.modal-btn.cancel:hover {
+    background-color: #888;
+}
+
+/* Remove item button */
+.remove-item-btn {
+    background-color: #ff4141;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.remove-item-btn:hover {
+    background-color: #ff6666;
+}
+
+.equipped-item-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.inventory-item {
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.inventory-item:hover {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+.inventory-item-text {
+    display: block;
+    width: 100%;
+}
+
+.drop-zone:hover {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Force modal visibility */
+.modal-hidden {
+    display: none !important;
+}
+
+.modal-visible {
+    display: flex !important;
+}
+
+/* Animação shake para feedback visual */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-10px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(10px);
+    }
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+
+/* Mobile-first design improvements */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    /* Reduce text shadow intensity on mobile for better readability */
+    body {
+        text-shadow: 0 0 3px #00ff41, 0 0 6px #00ff41;
+    }
+
+    /* Smaller scanlines effect on mobile */
+    body::after {
+        background-size: 100% 1px, 2px 100%;
+        opacity: 0.3;
+    }
+
+    /* Mobile header adjustments */
+    .mobile-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Agent info styling */
+    #agent-id-display,
+    #mobile-agent-id-display {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    @media (max-width: 640px) {
+        .mobile-header {
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
         }
 
-        /* Efeito de scanlines para dar a sensação de monitor antigo */
-        body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 100;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* Animação de cursor piscando */
-        .cursor {
-            animation: blink 1s step-end infinite;
-        }
-
-        @keyframes blink {
-
-            from,
-            to {
-                background-color: transparent;
-            }
-
-            50% {
-                background-color: #00ff41;
-            }
-        }
-
-        /* Estilos para elementos de UI */
-        .terminal-border {
-            border: 1px solid #00ff41;
-            box-shadow: 0 0 10px #00ff41 inset;
-        }
-
-        .terminal-text-red {
-            color: #ff4141;
-            text-shadow: 0 0 5px #ff4141;
-        }
-
-        .terminal-text-amber {
-            color: #ffb000;
-            text-shadow: 0 0 5px #ffb000;
-        }
-
-        /* Classes para cores vívidas - sobrescrevem o text-shadow global */
-        .text-red-400 {
-            color: red !important;
-            text-shadow: 0 0 8px red, 0 0 15px red !important;
-        }
-
-        .text-yellow-400 {
-            color: #facc15 !important;
-            text-shadow: 0 0 8px #facc15, 0 0 15px #facc15 !important;
-        }
-
-        .terminal-text-green {
-            color: #22c55e;
-            text-shadow: 0 0 5px #22c55e;
-        }
-
-        .terminal-text-blue {
-            color: #3b82f6;
-            text-shadow: 0 0 5px #3b82f6;
-        }
-
-        /* Classes para níveis de acesso - cores específicas por hierarquia */
-        .access-level-0 {
-            color: #6b7280 !important;
-            text-shadow: 0 0 5px #6b7280 !important;
-        }
-
-        /* Cinza - CIVIS */
-        .access-level-1 {
-            color: #22c55e !important;
-            text-shadow: 0 0 5px #22c55e !important;
-        }
-
-        /* Verde - VÉU */
-        .access-level-2 {
-            color: #16a34a !important;
-            text-shadow: 0 0 5px #16a34a !important;
-        }
-
-        /* Verde escuro - SOMBRA */
-        .access-level-3 {
-            color: #15803d !important;
-            text-shadow: 0 0 5px #15803d !important;
-        }
-
-        /* Verde mais escuro - ECLOSO */
-        .access-level-4 {
-            color: #eab308 !important;
-            text-shadow: 0 0 5px #eab308 !important;
-        }
-
-        /* Amarelo - NECRÓPOLIS */
-        .access-level-5 {
-            color: #f59e0b !important;
-            text-shadow: 0 0 8px #f59e0b !important;
-        }
-
-        /* Laranja - VAULT */
-        .access-level-6 {
-            color: #d97706 !important;
-            text-shadow: 0 0 8px #d97706 !important;
-        }
-
-        /* Laranja escuro - SEPULCRO */
-        .access-level-7 {
-            color: #dc2626 !important;
-            text-shadow: 0 0 8px #dc2626 !important;
-        }
-
-        /* Vermelho - CÁLICE */
-        .access-level-8 {
-            color: #b91c1c !important;
-            text-shadow: 0 0 10px #b91c1c !important;
-        }
-
-        /* Vermelho escuro - TÉMPEL */
-        .access-level-9 {
-            color: #7c2d12 !important;
-            text-shadow: 0 0 10px #7c2d12 !important;
-        }
-
-        /* Vermelho muito escuro - LIMINAR */
-        .access-level-10 {
-            color: #8b5cf6 !important;
-            text-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6 !important;
-        }
-
-        /* Roxo brilhante - ÓRBITA */
-
-        .btn {
-            background-color: #00ff41;
-            color: #0c0c0c;
-            text-shadow: none;
-            padding: 4px 8px;
-            border: 1px solid #00ff41;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background-color: #33ff6a;
-        }
-
-        [contenteditable] {
-            outline: none;
-        }
-
-        [contenteditable]:focus {
-            background-color: rgba(0, 255, 65, 0.1);
-            box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
-        }
-
-        /* Drag and Drop styles */
-        .draggable-item {
-            cursor: grab;
-        }
-
-        .draggable-item:active {
-            cursor: grabbing;
-        }
-
-        .drop-zone {
-            border: 2px dashed #005a17;
-            min-height: 28px;
-            transition: background-color 0.2s;
-        }
-
-        .drop-zone.drag-over {
-            background-color: rgba(0, 255, 65, 0.2);
-        }
-
-        /* Scrollbar customizada - RESTAURADA E MELHORADA */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px; /* Para scroll horizontal */
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0c0c0c;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #00ff41;
-            box-shadow: 0 0 5px #00ff41;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #33ff6a;
-            box-shadow: 0 0 8px #33ff6a;
-        }
-        
-        /* Scrollbar para Firefox */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: #00ff41 #0c0c0c;
-        }
-        
-        /* Específico para áreas de conteúdo que precisam de scroll */
-        .overflow-y-auto, .overflow-x-auto, .overflow-auto,
-        #main-content, .content-area, .sidebar, #context-sidebar,
-        .modal-content, .character-sheet-content {
-            scrollbar-width: thin;
-            scrollbar-color: #00ff41 #0c0c0c;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar, 
-        .overflow-x-auto::-webkit-scrollbar, 
-        .overflow-auto::-webkit-scrollbar,
-        #main-content::-webkit-scrollbar, 
-        .content-area::-webkit-scrollbar, 
-        .sidebar::-webkit-scrollbar, 
-        #context-sidebar::-webkit-scrollbar,
-        .modal-content::-webkit-scrollbar, 
-        .character-sheet-content::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-track,
-        .overflow-x-auto::-webkit-scrollbar-track,
-        .overflow-auto::-webkit-scrollbar-track,
-        #main-content::-webkit-scrollbar-track,
-        .content-area::-webkit-scrollbar-track,
-        .sidebar::-webkit-scrollbar-track,
-        #context-sidebar::-webkit-scrollbar-track,
-        .modal-content::-webkit-scrollbar-track,
-        .character-sheet-content::-webkit-scrollbar-track {
-            background: #1a1a1a;
-            border-radius: 4px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb,
-        .overflow-x-auto::-webkit-scrollbar-thumb,
-        .overflow-auto::-webkit-scrollbar-thumb,
-        #main-content::-webkit-scrollbar-thumb,
-        .content-area::-webkit-scrollbar-thumb,
-        .sidebar::-webkit-scrollbar-thumb,
-        #context-sidebar::-webkit-scrollbar-thumb,
-        .modal-content::-webkit-scrollbar-thumb,
-        .character-sheet-content::-webkit-scrollbar-thumb {
-            background: #00ff41;
-            box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
-            border-radius: 4px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover,
-        .overflow-x-auto::-webkit-scrollbar-thumb:hover,
-        .overflow-auto::-webkit-scrollbar-thumb:hover,
-        #main-content::-webkit-scrollbar-thumb:hover,
-        .content-area::-webkit-scrollbar-thumb:hover,
-        .sidebar::-webkit-scrollbar-thumb:hover,
-        #context-sidebar::-webkit-scrollbar-thumb:hover,
-        .modal-content::-webkit-scrollbar-thumb:hover,
-        .character-sheet-content::-webkit-scrollbar-thumb:hover {
-            background: #33ff6a;
-            box-shadow: 0 0 8px rgba(51, 255, 106, 0.7);
-        }
-
-        /* Modal styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .mobile-header>div {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
             justify-content: center;
-            align-items: center;
-            z-index: 1000;
         }
 
-        .modal-content {
-            background-color: #0c0c0c;
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 400px;
+        #agent-id-display {
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        #agent-id-display,
+        #mobile-agent-id-display {
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Mobile navigation - hamburger menu style */
+    .mobile-nav-toggle {
+        display: block;
+        background: none;
+        border: 1px solid #00ff41;
+        color: #00ff41;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-family: 'Fira Code', monospace;
+        font-size: 12px;
+        cursor: pointer;
+        margin-bottom: 16px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .mobile-nav-toggle:hover {
+        background-color: rgba(0, 255, 65, 0.1);
+    }
+
+    /* Mobile sidebar - collapsible */
+    .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85%;
+        max-width: 320px;
+        height: 100vh;
+        background-color: #0c0c0c;
+        border-right: 2px solid #00ff41;
+        box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        z-index: 1000;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-sidebar.open {
+        left: 0;
+    }
+
+    /* Melhor estrutura para navegação mobile */
+    .mobile-sidebar nav {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 20px;
+    }
+
+    /* Otimização para listas longas no menu */
+    .mobile-sidebar nav a {
+        display: block;
+        padding: 12px 8px;
+        margin-bottom: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        word-wrap: break-word;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .mobile-sidebar nav a:hover,
+    .mobile-sidebar nav a:focus {
+        background-color: rgba(0, 255, 65, 0.1);
+        border: 1px solid rgba(0, 255, 65, 0.3);
+        transform: translateX(4px);
+    }
+
+    /* Context sidebar responsivo */
+    .mobile-sidebar #context-sidebar {
+        flex-shrink: 0;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #374151;
+        max-height: 40vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mobile-sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+    }
+
+    .mobile-sidebar-backdrop.visible {
+        display: block;
+    }
+
+    /* Mobile content area adjustments */
+    .mobile-content {
+        width: 100%;
+        min-height: calc(100vh - 140px);
+        max-height: calc(100vh - 140px);
+        padding: 12px;
+        font-size: 13px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Melhorias para telas pequenas */
+    @media (max-height: 600px) {
+        .mobile-sidebar {
             width: 90%;
-            box-shadow: 0 0 20px #00ff41;
+            max-width: 280px;
         }
 
-        .modal-input {
-            background-color: #1a1a1a;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            padding: 8px 12px;
-            border-radius: 4px;
-            width: 100%;
-            font-family: 'Fira Code', monospace;
+        .mobile-sidebar #context-sidebar {
+            max-height: 30vh;
         }
 
-        .modal-input:focus {
-            outline: none;
-            box-shadow: 0 0 5px #00ff41;
-        }
-
-        .modal-select {
-            background-color: #1a1a1a;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            padding: 8px 12px;
-            border-radius: 4px;
-            width: 100%;
-            font-family: 'Fira Code', monospace;
-        }
-
-        .modal-select option {
-            background-color: #1a1a1a;
-            color: #00ff41;
-        }
-
-        /* Styling for attribute dropdowns */
-        .player-stat-select {
-            background-color: #1a1a1a !important;
-            border: 1px solid #00ff41 !important;
-            color: #ffb000 !important;
-            border-radius: 4px !important;
-            padding: 4px 8px !important;
-            font-family: 'Fira Code', monospace !important;
-            font-size: 0.875rem !important;
-            text-shadow: 0 0 3px #ffb000 !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 0 5px rgba(0, 255, 65, 0.3) !important;
-        }
-
-        .player-stat-select:focus {
-            outline: none !important;
-            border-color: #ffb000 !important;
-            box-shadow: 0 0 8px rgba(255, 176, 0, 0.5) !important;
-            background-color: #2a2a2a !important;
-        }
-
-        .player-stat-select:hover {
-            border-color: #ffb000 !important;
-            box-shadow: 0 0 8px rgba(255, 176, 0, 0.4) !important;
-            background-color: #252525 !important;
-        }
-
-        .player-stat-select option {
-            background-color: #1a1a1a !important;
-            color: #ffb000 !important;
-            padding: 4px 8px !important;
-            font-family: 'Fira Code', monospace !important;
-        }
-
-        .player-stat-select option:hover {
-            background-color: #2a2a2a !important;
-        }
-
-        .player-stat-select option:checked {
-            background-color: #00ff41 !important;
-            color: #0c0c0c !important;
-            font-weight: bold !important;
-        }
-
-        .modal-btn {
-            background-color: #00ff41;
-            color: #0c0c0c;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Fira Code', monospace;
-            font-weight: bold;
-            margin: 0 5px;
-            transition: background-color 0.2s;
-        }
-
-        .modal-btn:hover {
-            background-color: #33ff6a;
-        }
-
-        .modal-btn.cancel {
-            background-color: #666;
-            color: #fff;
-        }
-
-        .modal-btn.cancel:hover {
-            background-color: #888;
-        }
-
-        /* Remove item button */
-        .remove-item-btn {
-            background-color: #ff4141;
-            color: #fff;
-            border: none;
-            border-radius: 3px;
-            width: 20px;
-            height: 20px;
+        .mobile-content {
+            min-height: calc(100vh - 120px);
+            max-height: calc(100vh - 120px);
+            padding: 8px;
             font-size: 12px;
-            cursor: pointer;
-            margin-left: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
+        }
+    }
+
+    /* Otimizações para landscape em dispositivos pequenos */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .mobile-sidebar {
+            width: 95%;
+            max-width: 350px;
+            padding: 12px;
         }
 
-        .remove-item-btn:hover {
-            background-color: #ff6666;
+        .mobile-sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
         }
 
-        .equipped-item-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
+        .mobile-sidebar nav a {
+            padding: 8px 6px;
+            font-size: 13px;
+            margin-bottom: 2px;
         }
 
-        .inventory-item {
-            position: relative;
-            transition: background-color 0.2s ease;
+        .mobile-sidebar #context-sidebar {
+            max-height: 25vh;
+            margin-top: 12px;
+            padding-top: 12px;
         }
 
-        .inventory-item:hover {
-            background-color: rgba(34, 197, 94, 0.2) !important;
+        .mobile-content {
+            min-height: calc(100vh - 100px);
+            max-height: calc(100vh - 100px);
+            padding: 6px;
+            font-size: 11px;
+        }
+    }
+
+    /* Melhorias para dispositivos muito pequenos */
+    @media (max-width: 320px) {
+        .mobile-sidebar {
+            width: 95%;
         }
 
-        .inventory-item-text {
-            display: block;
-            width: 100%;
+        .mobile-sidebar nav a {
+            font-size: 13px;
+            padding: 10px 6px;
         }
-
-        .drop-zone:hover {
-            background-color: rgba(34, 197, 94, 0.2) !important;
-        }
-
-        /* Force modal visibility */
-        .modal-hidden {
-            display: none !important;
-        }
-
-        .modal-visible {
-            display: flex !important;
-        }
-
-        /* Animação shake para feedback visual */
-        @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            10%,
-            30%,
-            50%,
-            70%,
-            90% {
-                transform: translateX(-10px);
-            }
-
-            20%,
-            40%,
-            60%,
-            80% {
-                transform: translateX(10px);
-            }
-        }
-
-        /* ===== MOBILE OPTIMIZATIONS ===== */
-
-        /* Mobile-first design improvements */
-        @media (max-width: 768px) {
-            body {
-                font-size: 14px;
-                line-height: 1.4;
-            }
-
-            /* Reduce text shadow intensity on mobile for better readability */
-            body {
-                text-shadow: 0 0 3px #00ff41, 0 0 6px #00ff41;
-            }
-
-            /* Smaller scanlines effect on mobile */
-            body::after {
-                background-size: 100% 1px, 2px 100%;
-                opacity: 0.3;
-            }
-
-            /* Mobile header adjustments */
-            .mobile-header {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            /* Agent info styling */
-            #agent-id-display,
-            #mobile-agent-id-display {
-                word-break: break-word;
-                overflow-wrap: break-word;
-            }
-
-            @media (max-width: 640px) {
-                .mobile-header {
-                    flex-direction: column;
-                    gap: 12px;
-                    text-align: center;
-                }
-
-                .mobile-header>div {
-                    width: 100%;
-                    justify-content: center;
-                }
-
-                #agent-id-display {
-                    font-size: 0.75rem;
-                    line-height: 1.2;
-                }
-            }
-
-            @media (max-width: 480px) {
-
-                #agent-id-display,
-                #mobile-agent-id-display {
-                    font-size: 0.7rem;
-                }
-            }
-
-            /* Mobile navigation - hamburger menu style */
-            .mobile-nav-toggle {
-                display: block;
-                background: none;
-                border: 1px solid #00ff41;
-                color: #00ff41;
-                padding: 8px 12px;
-                border-radius: 4px;
-                font-family: 'Fira Code', monospace;
-                font-size: 12px;
-                cursor: pointer;
-                margin-bottom: 16px;
-                width: 100%;
-                text-align: center;
-            }
-
-            .mobile-nav-toggle:hover {
-                background-color: rgba(0, 255, 65, 0.1);
-            }
-
-            /* Mobile sidebar - collapsible */
-            .mobile-sidebar {
-                position: fixed;
-                top: 0;
-                left: -100%;
-                width: 85%;
-                max-width: 320px;
-                height: 100vh;
-                background-color: #0c0c0c;
-                border-right: 2px solid #00ff41;
-                box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-                z-index: 1000;
-                transition: left 0.3s ease;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                padding: 16px;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .mobile-sidebar.open {
-                left: 0;
-            }
-
-            /* Melhor estrutura para navegação mobile */
-            .mobile-sidebar nav {
-                flex: 1;
-                min-height: 0;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 20px;
-            }
-
-            /* Otimização para listas longas no menu */
-            .mobile-sidebar nav a {
-                display: block;
-                padding: 12px 8px;
-                margin-bottom: 4px;
-                border-radius: 4px;
-                transition: all 0.2s ease;
-                word-wrap: break-word;
-                font-size: 14px;
-                line-height: 1.4;
-            }
-
-            .mobile-sidebar nav a:hover,
-            .mobile-sidebar nav a:focus {
-                background-color: rgba(0, 255, 65, 0.1);
-                border: 1px solid rgba(0, 255, 65, 0.3);
-                transform: translateX(4px);
-            }
-
-            /* Context sidebar responsivo */
-            .mobile-sidebar #context-sidebar {
-                flex-shrink: 0;
-                margin-top: 16px;
-                padding-top: 16px;
-                border-top: 1px solid #374151;
-                max-height: 40vh;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .mobile-sidebar-backdrop {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100vh;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-                display: none;
-            }
-
-            .mobile-sidebar-backdrop.visible {
-                display: block;
-            }
-
-            /* Mobile content area adjustments */
-            .mobile-content {
-                width: 100%;
-                min-height: calc(100vh - 140px);
-                max-height: calc(100vh - 140px);
-                padding: 12px;
-                font-size: 13px;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            /* Melhorias para telas pequenas */
-            @media (max-height: 600px) {
-                .mobile-sidebar {
-                    width: 90%;
-                    max-width: 280px;
-                }
-
-                .mobile-sidebar #context-sidebar {
-                    max-height: 30vh;
-                }
-
-                .mobile-content {
-                    min-height: calc(100vh - 120px);
-                    max-height: calc(100vh - 120px);
-                    padding: 8px;
-                    font-size: 12px;
-                }
-            }
-
-            /* Otimizações para landscape em dispositivos pequenos */
-            @media (max-height: 500px) and (orientation: landscape) {
-                .mobile-sidebar {
-                    width: 95%;
-                    max-width: 350px;
-                    padding: 12px;
-                }
-
-                .mobile-sidebar h2 {
-                    font-size: 16px;
-                    margin-bottom: 12px;
-                }
-
-                .mobile-sidebar nav a {
-                    padding: 8px 6px;
-                    font-size: 13px;
-                    margin-bottom: 2px;
-                }
-
-                .mobile-sidebar #context-sidebar {
-                    max-height: 25vh;
-                    margin-top: 12px;
-                    padding-top: 12px;
-                }
-
-                .mobile-content {
-                    min-height: calc(100vh - 100px);
-                    max-height: calc(100vh - 100px);
-                    padding: 6px;
-                    font-size: 11px;
-                }
-            }
-
-            /* Melhorias para dispositivos muito pequenos */
-            @media (max-width: 320px) {
-                .mobile-sidebar {
-                    width: 95%;
-                }
-                
-                .mobile-sidebar nav a {
-                    font-size: 13px;
-                    padding: 10px 6px;
-                }
-            }
-
-            /* Mobile modals */
-            .modal-content {
-                max-width: 90%;
-                margin: 0 16px;
-                max-height: 85vh;
-                overflow-y: auto;
-            }
-
-            /* Mobile specific modal content for character sheet */
-            #traits-selection-modal .modal-content,
-            #knowledge-selection-modal .modal-content,
-            #skills-selection-modal .modal-content {
-                max-height: 90vh;
-                height: auto;
-                min-height: 70vh;
-                display: flex;
-                flex-direction: column;
-            }
-
-            /* Ensure scrollable areas work properly on mobile */
-            .mobile-traits-content,
-            #mobile-positive-content,
-            #mobile-negative-content,
-            #mobile-knowledge-content,
-            #mobile-skills-content {
-                height: auto !important;
-                max-height: 60vh !important;
-                min-height: 50vh;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 40px !important;
-                margin-bottom: 8px;
-            }
-        }
-
-        /* Desktop styles for knowledge and skills modals */
-        @media (min-width: 768px) {
-            #mobile-knowledge-content,
-            #mobile-skills-content {
-                height: 70vh !important;
-                max-height: 70vh !important;
-                min-height: 60vh;
-                overflow-y: auto;
-                overflow-x: hidden;
-                scrollbar-width: thin;
-                scrollbar-color: #00ff41 transparent;
-            }
-
-            #mobile-knowledge-content::-webkit-scrollbar,
-            #mobile-skills-content::-webkit-scrollbar {
-                width: 8px;
-            }
-
-            #mobile-knowledge-content::-webkit-scrollbar-track,
-            #mobile-skills-content::-webkit-scrollbar-track {
-                background: transparent;
-            }
-
-            #mobile-knowledge-content::-webkit-scrollbar-thumb,
-            #mobile-skills-content::-webkit-scrollbar-thumb {
-                background: #00ff41;
-                border-radius: 4px;
-            }
-
-            #mobile-knowledge-content::-webkit-scrollbar-thumb:hover,
-            #mobile-skills-content::-webkit-scrollbar-thumb:hover {
-                background: #00cc33;
-            }
-        }
-
-        /* Race and Class modal scroll areas */
-        #race-selection-modal .overflow-y-auto,
-        #class-selection-modal .overflow-y-auto {
-            padding-bottom: 40px !important;
-            scrollbar-width: thin;
-            scrollbar-color: #00ff41 transparent;
-        }
-
-        #race-selection-modal .overflow-y-auto::-webkit-scrollbar,
-        #class-selection-modal .overflow-y-auto::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #race-selection-modal .overflow-y-auto::-webkit-scrollbar-track,
-        #class-selection-modal .overflow-y-auto::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #race-selection-modal .overflow-y-auto::-webkit-scrollbar-thumb {
-            background: #a855f7; /* Purple for race */
-            border-radius: 3px;
-        }
-
-        #class-selection-modal .overflow-y-auto::-webkit-scrollbar-thumb {
-            background: #ea580c; /* Orange for class */
-            border-radius: 3px;
-        }
-
-        /* Desktop scroll areas for traits */
-        .traits-desktop-scroll {
-            padding-bottom: 30px !important;
-            scrollbar-width: thin;
-            scrollbar-color: #00ff41 transparent;
-        }
-
-        .traits-desktop-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .traits-desktop-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .traits-desktop-scroll::-webkit-scrollbar-thumb {
-            background: #00ff41;
-            border-radius: 3px;
-        }
-
-        /* Fix for very small screens - only mobile */
-        @media (max-height: 600px) and (max-width: 767px) {
-                #traits-selection-modal .modal-content,
-                #knowledge-selection-modal .modal-content,
-                #skills-selection-modal .modal-content,
-                #race-selection-modal .modal-content,
-                #class-selection-modal .modal-content {
-                    max-height: 95vh;
-                    margin: 8px;
-                }
-
-                .mobile-traits-content,
-                #mobile-positive-content,
-                #mobile-negative-content,
-                #mobile-knowledge-content,
-                #mobile-skills-content {
-                    max-height: 50vh !important;
-                    min-height: 40vh;
-                    padding-bottom: 50px !important;
-                }
-
-                /* Extra spacing for traits containers */
-                #mobile-positive-content .space-y-3,
-                #mobile-negative-content .space-y-3 {
-                    padding-bottom: 20px !important;
-                }
-
-                /* Additional bottom spacing for traits container divs */
-                #mobile-positive-content > div,
-                #mobile-negative-content > div {
-                    padding-bottom: 30px !important;
-                }
-
-                /* Race and class modal adjustments */
-                #race-selection-modal .overflow-y-auto,
-                #class-selection-modal .overflow-y-auto {
-                    max-height: 50vh !important;
-                    padding-bottom: 60px !important;
-                }
-            }
-
-            /* Extra small screens (phones in landscape, etc) - only mobile */
-            @media (max-height: 500px) and (max-width: 767px) {
-                #traits-selection-modal .modal-content,
-                #knowledge-selection-modal .modal-content,
-                #skills-selection-modal .modal-content,
-                #race-selection-modal .modal-content,
-                #class-selection-modal .modal-content {
-                    max-height: 98vh;
-                    margin: 4px;
-                    padding: 12px;
-                }
-
-                .mobile-traits-content,
-                #mobile-positive-content,
-                #mobile-negative-content,
-                #mobile-knowledge-content,
-                #mobile-skills-content {
-                    max-height: 45vh !important;
-                    min-height: 35vh;
-                    padding-bottom: 60px !important;
-                }
-
-                /* Extra spacing for traits containers on small screens */
-                #mobile-positive-content .space-y-3,
-                #mobile-negative-content .space-y-3 {
-                    padding-bottom: 30px !important;
-                }
-
-                /* Additional bottom spacing for traits container divs on small screens */
-                #mobile-positive-content > div,
-                #mobile-negative-content > div {
-                    padding-bottom: 40px !important;
-                }
-
-                /* Race and class modal adjustments for small screens */
-                #race-selection-modal .overflow-y-auto,
-                #class-selection-modal .overflow-y-auto {
-                    max-height: 40vh !important;
-                    padding-bottom: 70px !important;
-                }
-            }
-
-            /* Ensure modal buttons are always visible */
-            #traits-selection-modal .modal-content > div:last-child,
-            #knowledge-selection-modal .modal-content > div:last-child,
-            #skills-selection-modal .modal-content > div:last-child,
-            #race-selection-modal .modal-content > div:last-child,
-            #class-selection-modal .modal-content > div:last-child {
-                flex-shrink: 0;
-                margin-top: auto;
-                padding-top: 16px;
-                background: #1a1a1a;
-                border-top: 1px solid #333;
-            }
-
-            /* Ensure last items in modal lists have extra spacing */
-            .mobile-traits-content label:last-child,
-            #mobile-positive-content label:last-child,
-            #mobile-negative-content label:last-child,
-            #mobile-knowledge-content label:last-child,
-            #mobile-skills-content label:last-child,
-            .traits-desktop-scroll label:last-child,
-            #race-selection-modal .race-option:last-child,
-            #class-selection-modal .class-option:last-child {
-                margin-bottom: 60px !important;
-                padding-bottom: 15px !important;
-            }
-
-            /* Extra spacing for mobile modal scrollable content */
-            .mobile-traits-content::after,
-            #mobile-positive-content::after,
-            #mobile-negative-content::after,
-            #mobile-knowledge-content::after,
-            #mobile-skills-content::after,
-            #race-selection-modal .overflow-y-auto::after,
-            #class-selection-modal .overflow-y-auto::after {
-                content: '';
-                display: block;
-                height: 50px;
-                width: 100%;
-            }
-
-            /* Extra spacing for desktop traits scroll areas */
-            @media (min-width: 769px) {
-                .traits-desktop-scroll::after {
-                    content: '';
-                    display: block;
-                    height: 40px;
-                    width: 100%;
-                }
-            }
-
-            /* Fixed modal footer styling */
-            .modal-footer-fixed {
-                border-top: 1px solid #374151;
-                background-color: #0c0c0c;
-                position: sticky;
-                bottom: 0;
-            }
-
-            /* Mobile terminal border - thinner */
-            .terminal-border {
-                border-width: 1px;
-                box-shadow: 0 0 5px #00ff41 inset;
-            }
-
-            /* Mobile button adjustments */
-            .modal-btn,
-            .btn {
-                padding: 12px 16px;
-                font-size: 14px;
-                touch-action: manipulation;
-                min-height: 44px;
-            }
-
-            /* Mobile input adjustments */
-            .modal-input,
-            .modal-select {
-                padding: 12px;
-                font-size: 16px;
-                /* Prevents zoom on iOS */
-                min-height: 44px;
-            }
-
-            /* Mobile details/summary */
-            details summary {
-                padding: 12px 8px;
-                touch-action: manipulation;
-                cursor: pointer;
-            }
-
-            details[open] summary {
-                margin-bottom: 12px;
-            }
-
-            /* Mobile navigation links */
-            nav a {
-                padding: 12px 8px;
-                display: block;
-                touch-action: manipulation;
-                border-radius: 4px;
-                margin-bottom: 4px;
-            }
-
-            /* Mobile close button for sidebar */
-            .mobile-close-btn {
-                position: absolute;
-                top: 12px;
-                right: 12px;
-                background: rgba(255, 65, 65, 0.2);
-                border: 2px solid #ff4141;
-                color: #ff4141;
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 18px;
-                font-weight: bold;
-                cursor: pointer;
-                z-index: 1001;
-                transition: all 0.2s ease;
-                touch-action: manipulation;
-                -webkit-tap-highlight-color: transparent;
-            }
-
-            .mobile-close-btn:hover,
-            .mobile-close-btn:focus {
-                background: rgba(255, 65, 65, 0.3);
-                transform: scale(1.1);
-                box-shadow: 0 0 10px rgba(255, 65, 65, 0.5);
-            }
-
-            .mobile-close-btn:active {
-                transform: scale(0.95);
-                background: rgba(255, 65, 65, 0.4);
-            }
-
-            /* Melhor área de toque para navegação mobile */
-            .mobile-sidebar nav a {
-                min-height: 44px;
-                display: flex;
-                align-items: center;
-                padding: 12px 8px;
-                margin-bottom: 4px;
-                border-radius: 6px;
-                border: 1px solid transparent;
-                transition: all 0.2s ease;
-                -webkit-tap-highlight-color: transparent;
-                position: relative;
-            }
-
-            .mobile-sidebar nav a:hover,
-            .mobile-sidebar nav a:focus,
-            .mobile-sidebar nav a:active {
-                background: rgba(0, 255, 65, 0.15);
-                border-color: rgba(0, 255, 65, 0.4);
-                transform: translateX(6px);
-                box-shadow: 0 2px 8px rgba(0, 255, 65, 0.2);
-            }
-
-            /* Indicador visual para links ativos */
-            .mobile-sidebar nav a[data-section="home"] {
-                border-left: 3px solid #00ff41;
-                background: rgba(0, 255, 65, 0.05);
-            }
-
-            /* Scroll suave para contexto sidebar mobile */
-            .mobile-sidebar #context-sidebar {
-                scrollbar-width: thin;
-                scrollbar-color: #00ff41 transparent;
-            }
-
-            .mobile-sidebar #context-sidebar::-webkit-scrollbar {
-                width: 4px;
-            }
-
-            .mobile-sidebar #context-sidebar::-webkit-scrollbar-track {
-                background: transparent;
-            }
-
-            .mobile-sidebar #context-sidebar::-webkit-scrollbar-thumb {
-                background: #00ff41;
-                border-radius: 2px;
-            }
-
-            /* Scrollbar mobile adicional */
-            .mobile-sidebar .scrollbar {
-                border-radius: 4px;
-                font-family: 'Fira Code', monospace;
-                font-size: 14px;
-                font-weight: bold;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s ease;
-                z-index: 1000;
-            }
-
-            .mobile-close-btn:hover {
-                background: rgba(255, 65, 65, 0.2);
-                border-color: #ff6b6b;
-                color: #ff6b6b;
-                transform: scale(1.05);
-            }
-
-            .mobile-close-btn:active {
-                transform: scale(0.95);
-            }
-
-            /* Mobile scrollbar styling */
-            ::-webkit-scrollbar {
-                width: 6px;
-            }
-
-            ::-webkit-scrollbar-track {
-                background: #0c0c0c;
-            }
-
-            ::-webkit-scrollbar-thumb {
-                background: #00ff41;
-                border-radius: 3px;
-            }
-
-            /* Mobile agent info - make it clearly clickable */
-            #mobile-agent-info {
-                cursor: pointer;
-                transition: all 0.2s ease;
-                user-select: none;
-            }
-
-            #mobile-agent-info:hover {
-                background: rgba(0, 255, 65, 0.05);
-                border-color: #00ff41;
-            }
-
-            #mobile-agent-info:active {
-                background: rgba(0, 255, 65, 0.1);
-                transform: scale(0.98);
-            }
-        }
-
-        /* Tablet optimizations */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .mobile-nav-toggle {
-                display: none;
-            }
-
-            .mobile-sidebar {
-                position: static;
-                width: auto;
-                height: auto;
-                padding: 16px;
-                border-right: none;
-            }
-        }
-
-        /* Hide mobile elements on desktop */
-        @media (min-width: 769px) {
-            .mobile-nav-toggle {
-                display: none;
-            }
-
-            .mobile-sidebar-backdrop {
-                display: none !important;
-            }
-
-            .mobile-close-btn {
-                display: none;
-            }
-
-            .mobile-sidebar {
-                display: none;
-            }
-        }
-
-        /* Desktop directory scrollbars - FORÇA VISIBILIDADE TOTAL */
-        @media (min-width: 769px) {
-            /* Alvos mais específicos para conteúdo de diretórios */
-            .directory-content, .file-list, .folder-content,
-            #content-area, #main-content, .content-area,
-            .overflow-y-auto, .overflow-auto,
-            details > div, details[open] > div,
-            .space-y-2, .space-y-3, .space-y-4,
-            div[class*="space-y"], div[class*="grid"],
-            .terminal-border div, .p-4 div,
-            main div, section div {
-                overflow-y: auto !important;
-                scrollbar-width: auto !important;
-                scrollbar-color: #00ff41 #1a1a1a !important;
-            }
-            
-            /* Scrollbars webkit para todos os containers */
-            .directory-content::-webkit-scrollbar,
-            .file-list::-webkit-scrollbar,
-            .folder-content::-webkit-scrollbar,
-            #content-area::-webkit-scrollbar,
-            #main-content::-webkit-scrollbar,
-            .content-area::-webkit-scrollbar,
-            .overflow-y-auto::-webkit-scrollbar,
-            .overflow-auto::-webkit-scrollbar,
-            details > div::-webkit-scrollbar,
-            details[open] > div::-webkit-scrollbar,
-            .space-y-2::-webkit-scrollbar,
-            .space-y-3::-webkit-scrollbar,
-            .space-y-4::-webkit-scrollbar,
-            div[class*="space-y"]::-webkit-scrollbar,
-            div[class*="grid"]::-webkit-scrollbar,
-            .terminal-border div::-webkit-scrollbar,
-            .p-4 div::-webkit-scrollbar,
-            main div::-webkit-scrollbar,
-            section div::-webkit-scrollbar {
-                width: 12px !important;
-                height: 12px !important;
-                display: block !important;
-                visibility: visible !important;
-            }
-            
-            /* Tracks dos scrollbars */
-            .directory-content::-webkit-scrollbar-track,
-            .file-list::-webkit-scrollbar-track,
-            .folder-content::-webkit-scrollbar-track,
-            #content-area::-webkit-scrollbar-track,
-            #main-content::-webkit-scrollbar-track,
-            .content-area::-webkit-scrollbar-track,
-            .overflow-y-auto::-webkit-scrollbar-track,
-            .overflow-auto::-webkit-scrollbar-track,
-            details > div::-webkit-scrollbar-track,
-            details[open] > div::-webkit-scrollbar-track,
-            .space-y-2::-webkit-scrollbar-track,
-            .space-y-3::-webkit-scrollbar-track,
-            .space-y-4::-webkit-scrollbar-track,
-            div[class*="space-y"]::-webkit-scrollbar-track,
-            div[class*="grid"]::-webkit-scrollbar-track,
-            .terminal-border div::-webkit-scrollbar-track,
-            .p-4 div::-webkit-scrollbar-track,
-            main div::-webkit-scrollbar-track,
-            section div::-webkit-scrollbar-track {
-                background: #1a1a1a !important;
-                border-radius: 6px !important;
-                border: 2px solid #333 !important;
-                box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3) !important;
-            }
-            
-            /* Thumbs dos scrollbars */
-            .directory-content::-webkit-scrollbar-thumb,
-            .file-list::-webkit-scrollbar-thumb,
-            .folder-content::-webkit-scrollbar-thumb,
-            #content-area::-webkit-scrollbar-thumb,
-            #main-content::-webkit-scrollbar-thumb,
-            .content-area::-webkit-scrollbar-thumb,
-            .overflow-y-auto::-webkit-scrollbar-thumb,
-            .overflow-auto::-webkit-scrollbar-thumb,
-            details > div::-webkit-scrollbar-thumb,
-            details[open] > div::-webkit-scrollbar-thumb,
-            .space-y-2::-webkit-scrollbar-thumb,
-            .space-y-3::-webkit-scrollbar-thumb,
-            .space-y-4::-webkit-scrollbar-thumb,
-            div[class*="space-y"]::-webkit-scrollbar-thumb,
-            div[class*="grid"]::-webkit-scrollbar-thumb,
-            .terminal-border div::-webkit-scrollbar-thumb,
-            .p-4 div::-webkit-scrollbar-thumb,
-            main div::-webkit-scrollbar-thumb,
-            section div::-webkit-scrollbar-thumb {
-                background: linear-gradient(180deg, #00ff41, #22c55e) !important;
-                border-radius: 6px !important;
-                border: 2px solid #00cc33 !important;
-                box-shadow: 0 0 10px rgba(0, 255, 65, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-                min-height: 20px !important;
-            }
-            
-            /* Hover nos thumbs */
-            .directory-content::-webkit-scrollbar-thumb:hover,
-            .file-list::-webkit-scrollbar-thumb:hover,
-            .folder-content::-webkit-scrollbar-thumb:hover,
-            #content-area::-webkit-scrollbar-thumb:hover,
-            #main-content::-webkit-scrollbar-thumb:hover,
-            .content-area::-webkit-scrollbar-thumb:hover,
-            .overflow-y-auto::-webkit-scrollbar-thumb:hover,
-            .overflow-auto::-webkit-scrollbar-thumb:hover,
-            details > div::-webkit-scrollbar-thumb:hover,
-            details[open] > div::-webkit-scrollbar-thumb:hover,
-            .space-y-2::-webkit-scrollbar-thumb:hover,
-            .space-y-3::-webkit-scrollbar-thumb:hover,
-            .space-y-4::-webkit-scrollbar-thumb:hover,
-            div[class*="space-y"]::-webkit-scrollbar-thumb:hover,
-            div[class*="grid"]::-webkit-scrollbar-thumb:hover,
-            .terminal-border div::-webkit-scrollbar-thumb:hover,
-            .p-4 div::-webkit-scrollbar-thumb:hover,
-            main div::-webkit-scrollbar-thumb:hover,
-            section div::-webkit-scrollbar-thumb:hover {
-                background: linear-gradient(180deg, #33ff6a, #00ff41) !important;
-                box-shadow: 0 0 15px rgba(51, 255, 106, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-                border-color: #33ff6a !important;
-            }
-            
-            /* Scrollbar corners */
-            .directory-content::-webkit-scrollbar-corner,
-            .file-list::-webkit-scrollbar-corner,
-            .folder-content::-webkit-scrollbar-corner,
-            #content-area::-webkit-scrollbar-corner,
-            #main-content::-webkit-scrollbar-corner,
-            .content-area::-webkit-scrollbar-corner,
-            .overflow-y-auto::-webkit-scrollbar-corner,
-            .overflow-auto::-webkit-scrollbar-corner,
-            details > div::-webkit-scrollbar-corner,
-            details[open] > div::-webkit-scrollbar-corner,
-            .space-y-2::-webkit-scrollbar-corner,
-            .space-y-3::-webkit-scrollbar-corner,
-            .space-y-4::-webkit-scrollbar-corner,
-            div[class*="space-y"]::-webkit-scrollbar-corner,
-            div[class*="grid"]::-webkit-scrollbar-corner,
-            .terminal-border div::-webkit-scrollbar-corner,
-            .p-4 div::-webkit-scrollbar-corner,
-            main div::-webkit-scrollbar-corner,
-            section div::-webkit-scrollbar-corner {
-                background: #1a1a1a !important;
-            }
-        }
+    }
+
+    /* Mobile modals */
+    .modal-content {
+        max-width: 90%;
+        margin: 0 16px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    /* Mobile specific modal content for character sheet */
+    #traits-selection-modal .modal-content,
+    #knowledge-selection-modal .modal-content,
+    #skills-selection-modal .modal-content {
+        max-height: 90vh;
+        height: auto;
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Ensure scrollable areas work properly on mobile */
+    .mobile-traits-content,
+    #mobile-positive-content,
+    #mobile-negative-content,
+    #mobile-knowledge-content,
+    #mobile-skills-content {
+        height: auto !important;
+        max-height: 60vh !important;
+        min-height: 50vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 40px !important;
+        margin-bottom: 8px;
+    }
+}
+
+/* Desktop styles for knowledge and skills modals */
+@media (min-width: 768px) {
+
+    #mobile-knowledge-content,
+    #mobile-skills-content {
+        height: 70vh !important;
+        max-height: 70vh !important;
+        min-height: 60vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: #00ff41 transparent;
+    }
+
+    #mobile-knowledge-content::-webkit-scrollbar,
+    #mobile-skills-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #mobile-knowledge-content::-webkit-scrollbar-track,
+    #mobile-skills-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #mobile-knowledge-content::-webkit-scrollbar-thumb,
+    #mobile-skills-content::-webkit-scrollbar-thumb {
+        background: #00ff41;
+        border-radius: 4px;
+    }
+
+    #mobile-knowledge-content::-webkit-scrollbar-thumb:hover,
+    #mobile-skills-content::-webkit-scrollbar-thumb:hover {
+        background: #00cc33;
+    }
+}
+
+/* Race and Class modal scroll areas */
+#race-selection-modal .overflow-y-auto,
+#class-selection-modal .overflow-y-auto {
+    padding-bottom: 40px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #00ff41 transparent;
+}
+
+#race-selection-modal .overflow-y-auto::-webkit-scrollbar,
+#class-selection-modal .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+#race-selection-modal .overflow-y-auto::-webkit-scrollbar-track,
+#class-selection-modal .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#race-selection-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #a855f7;
+    /* Purple for race */
+    border-radius: 3px;
+}
+
+#class-selection-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #ea580c;
+    /* Orange for class */
+    border-radius: 3px;
+}
+
+/* Desktop scroll areas for traits */
+.traits-desktop-scroll {
+    padding-bottom: 30px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #00ff41 transparent;
+}
+
+.traits-desktop-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.traits-desktop-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.traits-desktop-scroll::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 3px;
+}
+
+/* Fix for very small screens - only mobile */
+@media (max-height: 600px) and (max-width: 767px) {
+
+    #traits-selection-modal .modal-content,
+    #knowledge-selection-modal .modal-content,
+    #skills-selection-modal .modal-content,
+    #race-selection-modal .modal-content,
+    #class-selection-modal .modal-content {
+        max-height: 95vh;
+        margin: 8px;
+    }
+
+    .mobile-traits-content,
+    #mobile-positive-content,
+    #mobile-negative-content,
+    #mobile-knowledge-content,
+    #mobile-skills-content {
+        max-height: 50vh !important;
+        min-height: 40vh;
+        padding-bottom: 50px !important;
+    }
+
+    /* Extra spacing for traits containers */
+    #mobile-positive-content .space-y-3,
+    #mobile-negative-content .space-y-3 {
+        padding-bottom: 20px !important;
+    }
+
+    /* Additional bottom spacing for traits container divs */
+    #mobile-positive-content>div,
+    #mobile-negative-content>div {
+        padding-bottom: 30px !important;
+    }
+
+    /* Race and class modal adjustments */
+    #race-selection-modal .overflow-y-auto,
+    #class-selection-modal .overflow-y-auto {
+        max-height: 50vh !important;
+        padding-bottom: 60px !important;
+    }
+}
+
+/* Extra small screens (phones in landscape, etc) - only mobile */
+@media (max-height: 500px) and (max-width: 767px) {
+
+    #traits-selection-modal .modal-content,
+    #knowledge-selection-modal .modal-content,
+    #skills-selection-modal .modal-content,
+    #race-selection-modal .modal-content,
+    #class-selection-modal .modal-content {
+        max-height: 98vh;
+        margin: 4px;
+        padding: 12px;
+    }
+
+    .mobile-traits-content,
+    #mobile-positive-content,
+    #mobile-negative-content,
+    #mobile-knowledge-content,
+    #mobile-skills-content {
+        max-height: 45vh !important;
+        min-height: 35vh;
+        padding-bottom: 60px !important;
+    }
+
+    /* Extra spacing for traits containers on small screens */
+    #mobile-positive-content .space-y-3,
+    #mobile-negative-content .space-y-3 {
+        padding-bottom: 30px !important;
+    }
+
+    /* Additional bottom spacing for traits container divs on small screens */
+    #mobile-positive-content>div,
+    #mobile-negative-content>div {
+        padding-bottom: 40px !important;
+    }
+
+    /* Race and class modal adjustments for small screens */
+    #race-selection-modal .overflow-y-auto,
+    #class-selection-modal .overflow-y-auto {
+        max-height: 40vh !important;
+        padding-bottom: 70px !important;
+    }
+}
+
+/* Ensure modal buttons are always visible */
+#traits-selection-modal .modal-content>div:last-child,
+#knowledge-selection-modal .modal-content>div:last-child,
+#skills-selection-modal .modal-content>div:last-child,
+#race-selection-modal .modal-content>div:last-child,
+#class-selection-modal .modal-content>div:last-child {
+    flex-shrink: 0;
+    margin-top: auto;
+    padding-top: 16px;
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+}
+
+/* Ensure last items in modal lists have extra spacing */
+.mobile-traits-content label:last-child,
+#mobile-positive-content label:last-child,
+#mobile-negative-content label:last-child,
+#mobile-knowledge-content label:last-child,
+#mobile-skills-content label:last-child,
+.traits-desktop-scroll label:last-child,
+#race-selection-modal .race-option:last-child,
+#class-selection-modal .class-option:last-child {
+    margin-bottom: 60px !important;
+    padding-bottom: 15px !important;
+}
+
+/* Extra spacing for mobile modal scrollable content */
+.mobile-traits-content::after,
+#mobile-positive-content::after,
+#mobile-negative-content::after,
+#mobile-knowledge-content::after,
+#mobile-skills-content::after,
+#race-selection-modal .overflow-y-auto::after,
+#class-selection-modal .overflow-y-auto::after {
+    content: '';
+    display: block;
+    height: 50px;
+    width: 100%;
+}
+
+/* Extra spacing for desktop traits scroll areas */
+@media (min-width: 769px) {
+    .traits-desktop-scroll::after {
+        content: '';
+        display: block;
+        height: 40px;
+        width: 100%;
+    }
+}
+
+/* Fixed modal footer styling */
+.modal-footer-fixed {
+    border-top: 1px solid #374151;
+    background-color: #0c0c0c;
+    position: sticky;
+    bottom: 0;
+}
+
+/* Mobile terminal border - thinner */
+.terminal-border {
+    border-width: 1px;
+    box-shadow: 0 0 5px #00ff41 inset;
+}
+
+/* Mobile button adjustments */
+.modal-btn,
+.btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    touch-action: manipulation;
+    min-height: 44px;
+}
+
+/* Mobile input adjustments */
+.modal-input,
+.modal-select {
+    padding: 12px;
+    font-size: 16px;
+    /* Prevents zoom on iOS */
+    min-height: 44px;
+}
+
+/* Mobile details/summary */
+details summary {
+    padding: 12px 8px;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+details[open] summary {
+    margin-bottom: 12px;
+}
+
+/* Mobile navigation links */
+nav a {
+    padding: 12px 8px;
+    display: block;
+    touch-action: manipulation;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+/* Mobile close button for sidebar */
+.mobile-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 65, 65, 0.2);
+    border: 2px solid #ff4141;
+    color: #ff4141;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-close-btn:hover,
+.mobile-close-btn:focus {
+    background: rgba(255, 65, 65, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 65, 65, 0.5);
+}
+
+.mobile-close-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 65, 65, 0.4);
+}
+
+/* Melhor área de toque para navegação mobile */
+.mobile-sidebar nav a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 12px 8px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+}
+
+.mobile-sidebar nav a:hover,
+.mobile-sidebar nav a:focus,
+.mobile-sidebar nav a:active {
+    background: rgba(0, 255, 65, 0.15);
+    border-color: rgba(0, 255, 65, 0.4);
+    transform: translateX(6px);
+    box-shadow: 0 2px 8px rgba(0, 255, 65, 0.2);
+}
+
+/* Indicador visual para links ativos */
+.mobile-sidebar nav a[data-section="home"] {
+    border-left: 3px solid #00ff41;
+    background: rgba(0, 255, 65, 0.05);
+}
+
+/* Scroll suave para contexto sidebar mobile */
+.mobile-sidebar #context-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #00ff41 transparent;
+}
+
+.mobile-sidebar #context-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mobile-sidebar #context-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mobile-sidebar #context-sidebar::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 2px;
+}
+
+/* Scrollbar mobile adicional */
+.mobile-sidebar .scrollbar {
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.mobile-close-btn:hover {
+    background: rgba(255, 65, 65, 0.2);
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+    transform: scale(1.05);
+}
+
+.mobile-close-btn:active {
+    transform: scale(0.95);
+}
+
+/* Mobile scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0c0c0c;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 3px;
+}
+
+/* Mobile agent info - make it clearly clickable */
+#mobile-agent-info {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+#mobile-agent-info:hover {
+    background: rgba(0, 255, 65, 0.05);
+    border-color: #00ff41;
+}
+
+#mobile-agent-info:active {
+    background: rgba(0, 255, 65, 0.1);
+    transform: scale(0.98);
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .mobile-nav-toggle {
+        display: none;
+    }
+
+    .mobile-sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        padding: 16px;
+        border-right: none;
+    }
+}
+
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+    .mobile-nav-toggle {
+        display: none;
+    }
+
+    .mobile-sidebar-backdrop {
+        display: none !important;
+    }
+
+    .mobile-close-btn {
+        display: none;
+    }
+
+    .mobile-sidebar {
+        display: none;
+    }
+}
+
+/* Desktop directory scrollbars - FORÇA VISIBILIDADE TOTAL */
+@media (min-width: 769px) {
+
+    /* Alvos mais específicos para conteúdo de diretórios */
+    .directory-content,
+    .file-list,
+    .folder-content,
+    #content-area,
+    #main-content,
+    .content-area,
+    .overflow-y-auto,
+    .overflow-auto,
+    details>div,
+    details[open]>div,
+    .space-y-2,
+    .space-y-3,
+    .space-y-4,
+    div[class*="space-y"],
+    div[class*="grid"],
+    .terminal-border div,
+    .p-4 div,
+    main div,
+    section div {
+        overflow-y: auto !important;
+        scrollbar-width: auto !important;
+        scrollbar-color: #00ff41 #1a1a1a !important;
+    }
+
+    /* Scrollbars webkit para todos os containers */
+    .directory-content::-webkit-scrollbar,
+    .file-list::-webkit-scrollbar,
+    .folder-content::-webkit-scrollbar,
+    #content-area::-webkit-scrollbar,
+    #main-content::-webkit-scrollbar,
+    .content-area::-webkit-scrollbar,
+    .overflow-y-auto::-webkit-scrollbar,
+    .overflow-auto::-webkit-scrollbar,
+    details>div::-webkit-scrollbar,
+    details[open]>div::-webkit-scrollbar,
+    .space-y-2::-webkit-scrollbar,
+    .space-y-3::-webkit-scrollbar,
+    .space-y-4::-webkit-scrollbar,
+    div[class*="space-y"]::-webkit-scrollbar,
+    div[class*="grid"]::-webkit-scrollbar,
+    .terminal-border div::-webkit-scrollbar,
+    .p-4 div::-webkit-scrollbar,
+    main div::-webkit-scrollbar,
+    section div::-webkit-scrollbar {
+        width: 12px !important;
+        height: 12px !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* Tracks dos scrollbars */
+    .directory-content::-webkit-scrollbar-track,
+    .file-list::-webkit-scrollbar-track,
+    .folder-content::-webkit-scrollbar-track,
+    #content-area::-webkit-scrollbar-track,
+    #main-content::-webkit-scrollbar-track,
+    .content-area::-webkit-scrollbar-track,
+    .overflow-y-auto::-webkit-scrollbar-track,
+    .overflow-auto::-webkit-scrollbar-track,
+    details>div::-webkit-scrollbar-track,
+    details[open]>div::-webkit-scrollbar-track,
+    .space-y-2::-webkit-scrollbar-track,
+    .space-y-3::-webkit-scrollbar-track,
+    .space-y-4::-webkit-scrollbar-track,
+    div[class*="space-y"]::-webkit-scrollbar-track,
+    div[class*="grid"]::-webkit-scrollbar-track,
+    .terminal-border div::-webkit-scrollbar-track,
+    .p-4 div::-webkit-scrollbar-track,
+    main div::-webkit-scrollbar-track,
+    section div::-webkit-scrollbar-track {
+        background: #1a1a1a !important;
+        border-radius: 6px !important;
+        border: 2px solid #333 !important;
+        box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Thumbs dos scrollbars */
+    .directory-content::-webkit-scrollbar-thumb,
+    .file-list::-webkit-scrollbar-thumb,
+    .folder-content::-webkit-scrollbar-thumb,
+    #content-area::-webkit-scrollbar-thumb,
+    #main-content::-webkit-scrollbar-thumb,
+    .content-area::-webkit-scrollbar-thumb,
+    .overflow-y-auto::-webkit-scrollbar-thumb,
+    .overflow-auto::-webkit-scrollbar-thumb,
+    details>div::-webkit-scrollbar-thumb,
+    details[open]>div::-webkit-scrollbar-thumb,
+    .space-y-2::-webkit-scrollbar-thumb,
+    .space-y-3::-webkit-scrollbar-thumb,
+    .space-y-4::-webkit-scrollbar-thumb,
+    div[class*="space-y"]::-webkit-scrollbar-thumb,
+    div[class*="grid"]::-webkit-scrollbar-thumb,
+    .terminal-border div::-webkit-scrollbar-thumb,
+    .p-4 div::-webkit-scrollbar-thumb,
+    main div::-webkit-scrollbar-thumb,
+    section div::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #00ff41, #22c55e) !important;
+        border-radius: 6px !important;
+        border: 2px solid #00cc33 !important;
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        min-height: 20px !important;
+    }
+
+    /* Hover nos thumbs */
+    .directory-content::-webkit-scrollbar-thumb:hover,
+    .file-list::-webkit-scrollbar-thumb:hover,
+    .folder-content::-webkit-scrollbar-thumb:hover,
+    #content-area::-webkit-scrollbar-thumb:hover,
+    #main-content::-webkit-scrollbar-thumb:hover,
+    .content-area::-webkit-scrollbar-thumb:hover,
+    .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+    .overflow-auto::-webkit-scrollbar-thumb:hover,
+    details>div::-webkit-scrollbar-thumb:hover,
+    details[open]>div::-webkit-scrollbar-thumb:hover,
+    .space-y-2::-webkit-scrollbar-thumb:hover,
+    .space-y-3::-webkit-scrollbar-thumb:hover,
+    .space-y-4::-webkit-scrollbar-thumb:hover,
+    div[class*="space-y"]::-webkit-scrollbar-thumb:hover,
+    div[class*="grid"]::-webkit-scrollbar-thumb:hover,
+    .terminal-border div::-webkit-scrollbar-thumb:hover,
+    .p-4 div::-webkit-scrollbar-thumb:hover,
+    main div::-webkit-scrollbar-thumb:hover,
+    section div::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #33ff6a, #00ff41) !important;
+        box-shadow: 0 0 15px rgba(51, 255, 106, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        border-color: #33ff6a !important;
+    }
+
+    /* Scrollbar corners */
+    .directory-content::-webkit-scrollbar-corner,
+    .file-list::-webkit-scrollbar-corner,
+    .folder-content::-webkit-scrollbar-corner,
+    #content-area::-webkit-scrollbar-corner,
+    #main-content::-webkit-scrollbar-corner,
+    .content-area::-webkit-scrollbar-corner,
+    .overflow-y-auto::-webkit-scrollbar-corner,
+    .overflow-auto::-webkit-scrollbar-corner,
+    details>div::-webkit-scrollbar-corner,
+    details[open]>div::-webkit-scrollbar-corner,
+    .space-y-2::-webkit-scrollbar-corner,
+    .space-y-3::-webkit-scrollbar-corner,
+    .space-y-4::-webkit-scrollbar-corner,
+    div[class*="space-y"]::-webkit-scrollbar-corner,
+    div[class*="grid"]::-webkit-scrollbar-corner,
+    .terminal-border div::-webkit-scrollbar-corner,
+    .p-4 div::-webkit-scrollbar-corner,
+    main div::-webkit-scrollbar-corner,
+    section div::-webkit-scrollbar-corner {
+        background: #1a1a1a !important;
+    }
+}
