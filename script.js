@@ -10869,11 +10869,11 @@
             console.log('Mobile sidebar event listeners initialized');
             
             // Apply mobile fixes
-            applyMobileFixes();
+            applyMobileStatusFixesV2();
             
             // Apply mobile fixes on window resize
             window.addEventListener('resize', () => {
-                setTimeout(makeTabsScrollableOnMobile, 100);
+                setTimeout(applyMobileStatusFixesV2, 100);
             });
         });
 

@@ -544,87 +544,194 @@ body::after {
         }
     }
 
-    /* Mobile navigation - hamburger menu style */
+    /* Mobile navigation - fullscreen overlay style */
     .mobile-nav-toggle {
         display: block;
         background: none;
         border: 1px solid #00ff41;
         color: #00ff41;
-        padding: 8px 12px;
-        border-radius: 4px;
+        padding: 12px 16px;
+        border-radius: 6px;
         font-family: 'Fira Code', monospace;
-        font-size: 12px;
+        font-size: 14px;
+        font-weight: bold;
         cursor: pointer;
         margin-bottom: 16px;
         width: 100%;
         text-align: center;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
     }
 
     .mobile-nav-toggle:hover {
-        background-color: rgba(0, 255, 65, 0.1);
+        background-color: rgba(0, 255, 65, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 255, 65, 0.4);
     }
 
-    /* Mobile sidebar - collapsible */
+    /* Mobile fullscreen overlay */
     .mobile-sidebar {
         position: fixed;
         top: 0;
-        left: -100%;
-        width: 85%;
-        max-width: 320px;
+        left: 0;
+        width: 100%;
         height: 100vh;
-        background-color: #0c0c0c;
-        border-right: 2px solid #00ff41;
-        box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-        z-index: 1000;
-        transition: left 0.3s ease;
+        background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+        z-index: 2000;
+        display: none;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
+        animation: slideInFromBottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideInFromBottom {
+        0% {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 
     .mobile-sidebar.open {
-        left: 0;
-    }
-
-    /* Melhor estrutura para navegação mobile */
-    .mobile-sidebar nav {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 20px;
-    }
-
-    /* Otimização para listas longas no menu */
-    .mobile-sidebar nav a {
         display: block;
-        padding: 12px 8px;
-        margin-bottom: 4px;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-        word-wrap: break-word;
-        font-size: 14px;
-        line-height: 1.4;
     }
 
-    .mobile-sidebar nav a:hover,
-    .mobile-sidebar nav a:focus {
-        background-color: rgba(0, 255, 65, 0.1);
-        border: 1px solid rgba(0, 255, 65, 0.3);
+    /* Mobile sidebar header */
+    .mobile-sidebar .sidebar-header {
+        position: sticky;
+        top: 0;
+        background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+        border-bottom: 2px solid #00ff41;
+        padding: 20px;
+        box-shadow: 0 2px 20px rgba(0, 255, 65, 0.3);
+        z-index: 2001;
+    }
+
+    .mobile-sidebar .sidebar-header h3 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin: 0;
+        text-shadow: 0 0 10px #00ff41;
+    }
+
+    /* Mobile sidebar content */
+    .mobile-sidebar .sidebar-content {
+        padding: 0;
+        min-height: calc(100vh - 100px);
+    }
+
+    /* Agent status section - prominent display */
+    .mobile-agent-status {
+        background: linear-gradient(135deg, #001a0a 0%, #003315 100%);
+        border: 2px solid #00ff41;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 20px;
+        box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+        text-align: center;
+    }
+
+    .mobile-agent-status h4 {
+        color: #00ff41;
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+        text-shadow: 0 0 8px #00ff41;
+    }
+
+    .mobile-agent-status .agent-id {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #ffb000;
+        text-shadow: 0 0 8px #ffb000;
+        margin-bottom: 8px;
+        word-break: break-word;
+    }
+
+    .mobile-agent-status .access-level {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 16px;
+    }
+
+    /* Navigation sections */
+    .mobile-nav-section {
+        margin: 0;
+        background: rgba(0, 255, 65, 0.05);
+        border-top: 1px solid rgba(0, 255, 65, 0.2);
+    }
+
+    .mobile-nav-section h5 {
+        background: rgba(0, 255, 65, 0.1);
+        color: #00ff41;
+        padding: 16px 20px;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: bold;
+        text-shadow: 0 0 8px #00ff41;
+        border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+    }
+
+    .mobile-nav-section .nav-links {
+        padding: 8px;
+    }
+
+    /* Better mobile navigation links */
+    .mobile-nav-section nav a {
+        display: block;
+        padding: 16px 20px;
+        margin: 4px 8px;
+        border-radius: 8px;
+        background: rgba(0, 255, 65, 0.05);
+        border: 1px solid rgba(0, 255, 65, 0.2);
+        color: #00ff41;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-nav-section nav a:hover,
+    .mobile-nav-section nav a:active {
+        background: rgba(0, 255, 65, 0.15);
+        border-color: #00ff41;
+        transform: translateX(8px);
+        box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+    }
+
+    .mobile-nav-section nav a::before {
+        content: '▶';
+        margin-right: 12px;
+        font-size: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .mobile-nav-section nav a:hover::before {
         transform: translateX(4px);
     }
 
-    /* Context sidebar responsivo */
-    .mobile-sidebar #context-sidebar {
-        flex-shrink: 0;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid #374151;
-        max-height: 40vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+    /* Context sidebar in mobile */
+    .mobile-context-section {
+        background: rgba(255, 176, 0, 0.05);
+        border-top: 2px solid #ffb000;
+        margin-top: 20px;
+    }
+
+    .mobile-context-section h5 {
+        background: rgba(255, 176, 0, 0.1);
+        color: #ffb000;
+        text-shadow: 0 0 8px #ffb000;
     }
 
     .mobile-sidebar-backdrop {
@@ -1025,331 +1132,328 @@ nav a {
     margin-bottom: 4px;
 }
 
-/* Mobile close button for sidebar */
+/* Mobile close button for sidebar - VERSION 2.0 */
 .mobile-close-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(255, 65, 65, 0.2);
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #ff4141, #ff6b6b);
     border: 2px solid #ff4141;
-    color: #ff4141;
-    width: 36px;
-    height: 36px;
+    color: white;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     cursor: pointer;
-    z-index: 1001;
-    transition: all 0.2s ease;
+    z-index: 2002;
+    transition: all 0.3s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 15px rgba(255, 65, 65, 0.4);
 }
 
 .mobile-close-btn:hover,
 .mobile-close-btn:focus {
-    background: rgba(255, 65, 65, 0.3);
-    transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(255, 65, 65, 0.5);
+    background: linear-gradient(135deg, #ff6b6b, #ff9999);
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 20px rgba(255, 65, 65, 0.6);
 }
 
 .mobile-close-btn:active {
-    transform: scale(0.95);
-    background: rgba(255, 65, 65, 0.4);
+    transform: scale(0.95) rotate(90deg);
+    background: linear-gradient(135deg, #ff2222, #ff4141);
 }
 
-/* Melhor área de toque para navegação mobile */
-.mobile-sidebar nav a {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    padding: 12px 8px;
-    margin-bottom: 4px;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-    position: relative;
-}
-
-.mobile-sidebar nav a:hover,
-.mobile-sidebar nav a:focus,
-.mobile-sidebar nav a:active {
-    background: rgba(0, 255, 65, 0.15);
-    border-color: rgba(0, 255, 65, 0.4);
-    transform: translateX(6px);
-    box-shadow: 0 2px 8px rgba(0, 255, 65, 0.2);
-}
-
-/* Indicador visual para links ativos */
-.mobile-sidebar nav a[data-section="home"] {
-    border-left: 3px solid #00ff41;
-    background: rgba(0, 255, 65, 0.05);
-}
-
-/* Scroll suave para contexto sidebar mobile */
-.mobile-sidebar #context-sidebar {
-    scrollbar-width: thin;
-    scrollbar-color: #00ff41 transparent;
-}
-
-.mobile-sidebar #context-sidebar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.mobile-sidebar #context-sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.mobile-sidebar #context-sidebar::-webkit-scrollbar-thumb {
-    background: #00ff41;
-    border-radius: 2px;
-}
-
-/* Scrollbar mobile adicional */
-.mobile-sidebar .scrollbar {
-    border-radius: 4px;
-    font-family: 'Fira Code', monospace;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
+/* Botão de fechar alternativo no header */
+#mobile-sidebar-close {
+    background: none;
+    border: 2px solid #ff4141;
+    color: #ff4141;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
 }
 
-.mobile-close-btn:hover {
+#mobile-sidebar-close:hover {
     background: rgba(255, 65, 65, 0.2);
     border-color: #ff6b6b;
     color: #ff6b6b;
     transform: scale(1.05);
 }
 
-.mobile-close-btn:active {
-    transform: scale(0.95);
+#mobile-sidebar-close svg {
+    width: 20px;
+    height: 20px;
 }
 
-/* Mobile scrollbar styling */
-::-webkit-scrollbar {
-    width: 6px;
+/* Footer do mobile menu com botão de fechar grande */
+.mobile-menu-footer {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+    border-top: 2px solid #00ff41;
+    padding: 20px;
+    text-align: center;
+    z-index: 2001;
+    box-shadow: 0 -4px 20px rgba(0, 255, 65, 0.3);
 }
 
-::-webkit-scrollbar-track {
-    background: #0c0c0c;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #00ff41;
-    border-radius: 3px;
-}
-
-/* Mobile agent info - make it clearly clickable */
-#mobile-agent-info {
+.mobile-menu-footer .close-menu-btn {
+    background: linear-gradient(135deg, #ff4141, #ff6b6b);
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    border-radius: 25px;
+    font-family: 'Fira Code', monospace;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
+    width: 100%;
+    max-width: 300px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 65, 65, 0.4);
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-#mobile-agent-info:hover {
-    background: rgba(0, 255, 65, 0.05);
-    border-color: #00ff41;
+.mobile-menu-footer .close-menu-btn:hover {
+    background: linear-gradient(135deg, #ff6b6b, #ff9999);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 65, 65, 0.6);
 }
 
-#mobile-agent-info:active {
-    background: rgba(0, 255, 65, 0.1);
-    transform: scale(0.98);
+.mobile-menu-footer .close-menu-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(255, 65, 65, 0.4);
 }
 
-/* Tablet optimizations */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .mobile-nav-toggle {
-        display: none;
+/* ===== MOBILE MENU V2.0 - MELHORIAS VISUAIS ===== */
+    
+    /* Animação de entrada suave */
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Animação dos elementos do menu */
+    .mobile-agent-status {
+        animation: fadeInUp 0.5s ease-out 0.1s both;
+    }
+    
+    .mobile-nav-section:nth-child(1) {
+        animation: fadeInUp 0.5s ease-out 0.2s both;
+    }
+    
+    .mobile-nav-section:nth-child(2) {
+        animation: fadeInUp 0.5s ease-out 0.3s both;
+    }
+    
+    .mobile-context-section {
+        animation: fadeInUp 0.5s ease-out 0.4s both;
+    }
+    
+    /* Hover effects melhorados */
+    .mobile-nav-section nav a {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .mobile-nav-section nav a:active {
+        transform: scale(0.95);
+        background: rgba(0, 255, 65, 0.25);
+    }
+    
+    /* Status do agente responsivo */
+    @media (max-width: 480px) {
+        .mobile-agent-status {
+            margin: 16px;
+            padding: 20px;
+        }
+        
+        .mobile-agent-status h4 {
+            font-size: 1.1rem;
+        }
+        
+        .mobile-agent-status .agent-id {
+            font-size: 1rem;
+        }
+    }
+    
+    /* Scroll suave para o menu */
+    .mobile-sidebar.open {
+        scroll-behavior: smooth;
+    }
+    
+    /* Loading state para o menu */
+    .mobile-menu-loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+    
+    .mobile-menu-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(0, 255, 65, 0.3);
+        border-top: 3px solid #00ff41;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        transform: translate(-50%, -50%);
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
-    .mobile-sidebar {
-        position: static;
-        width: auto;
-        height: auto;
-        padding: 16px;
-        border-right: none;
+/* ===== FIX PARA MAGIA E HABILIDADES NO MOBILE - VERSÃO INTELIGENTE ===== */
+
+/* Aplicar apenas no mobile */
+@media (max-width: 768px) {
+    /* Padding inferior mais conservador - JavaScript calculará dinamicamente */
+    #content-area {
+        padding-bottom: 4rem !important;
+    }
+    
+    /* Padding para o último elemento visível do status */
+    #content-area > div:last-child,
+    #content-area > section:last-child,
+    #content-area > main:last-child {
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Padding específico apenas para details abertos (últimos) */
+    details[open]:last-of-type {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Padding específico para o conteúdo scrollável */
+    .overflow-y-auto:last-child,
+    .space-y-6:last-child,
+    .grid:last-child {
+        padding-bottom: 1rem !important;
+    }
+    
+    /* ===== PADDING FIX ESPECÍFICO PARA MENU MOBILE ===== */
+    
+    /* Padding extra nas seções de navegação do menu mobile */
+    .mobile-nav-section .nav-links {
+        padding-bottom: 2rem !important;
+    }
+    
+    .mobile-nav-section .nav-links nav a:last-child,
+    .mobile-nav-section .nav-links > *:last-child {
+        margin-bottom: 1.5rem !important;
+        padding-bottom: 1rem !important;
+    }
+    
+    /* Context section com padding extra */
+    .mobile-context-section .nav-links {
+        padding-bottom: 3rem !important;
+    }
+    
+    .mobile-context-section .nav-links > *:last-child {
+        margin-bottom: 2rem !important;
+        padding-bottom: 1rem !important;
+    }
+    
+    /* Sidebar content com padding geral */
+    .mobile-sidebar .sidebar-content {
+        padding-bottom: 4rem !important;
+    }
+    
+    /* Sistema section (última) com padding extra */
+    .mobile-nav-section:last-of-type .nav-links {
+        padding-bottom: 3rem !important;
+    }
+    
+    /* Menu footer sempre visível */
+    .mobile-menu-footer {
+        margin-top: 2rem !important;
+    }
+    
+    /* Garantir que navigation links tenham espaçamento adequado */
+    .mobile-nav-section nav a {
+        margin-bottom: 8px !important;
+    }
+    
+    .mobile-nav-section nav a:last-child {
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Para context sidebar items */
+    .mobile-context-section a {
+        margin-bottom: 8px !important;
+    }
+    
+    .mobile-context-section > div > *:last-child {
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Espaçamento extra para o último elemento de qualquer seção */
+    .mobile-nav-section:last-child,
+    .mobile-context-section:last-child {
+        padding-bottom: 2rem !important;
     }
 }
 
-/* Hide mobile elements on desktop */
-@media (min-width: 769px) {
-    .mobile-nav-toggle {
-        display: none;
+/* ===== SISTEMA INTELIGENTE DE PADDING PARA CARDS ABERTOS ===== */
+
+@media (max-width: 768px) {
+    /* Transição suave para mudanças de padding */
+    #content-area {
+        transition: padding-bottom 0.3s ease-out !important;
     }
-
-    .mobile-sidebar-backdrop {
-        display: none !important;
+    
+    /* Garantir que cards abertos tenham espaço adequado */
+    details[open] {
+        margin-bottom: 1rem !important;
     }
-
-    .mobile-close-btn {
-        display: none;
+    
+    /* Padding extra para o último card aberto */
+    details[open]:last-of-type {
+        margin-bottom: 2rem !important;
     }
-
-    .mobile-sidebar {
-        display: none;
+    
+    /* Animação suave para abertura de cards */
+    details[open] > div,
+    details[open] > summary + * {
+        animation: expandContent 0.3s ease-out;
     }
-}
-
-/* Desktop directory scrollbars - FORÇA VISIBILIDADE TOTAL */
-@media (min-width: 769px) {
-
-    /* Alvos mais específicos para conteúdo de diretórios */
-    .directory-content,
-    .file-list,
-    .folder-content,
-    #content-area,
-    #main-content,
-    .content-area,
-    .overflow-y-auto,
-    .overflow-auto,
-    details>div,
-    details[open]>div,
-    .space-y-2,
-    .space-y-3,
-    .space-y-4,
-    div[class*="space-y"],
-    div[class*="grid"],
-    .terminal-border div,
-    .p-4 div,
-    main div,
-    section div {
-        overflow-y: auto !important;
-        scrollbar-width: auto !important;
-        scrollbar-color: #00ff41 #1a1a1a !important;
+    
+    @keyframes expandContent {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-
-    /* Scrollbars webkit para todos os containers */
-    .directory-content::-webkit-scrollbar,
-    .file-list::-webkit-scrollbar,
-    .folder-content::-webkit-scrollbar,
-    #content-area::-webkit-scrollbar,
-    #main-content::-webkit-scrollbar,
-    .content-area::-webkit-scrollbar,
-    .overflow-y-auto::-webkit-scrollbar,
-    .overflow-auto::-webkit-scrollbar,
-    details>div::-webkit-scrollbar,
-    details[open]>div::-webkit-scrollbar,
-    .space-y-2::-webkit-scrollbar,
-    .space-y-3::-webkit-scrollbar,
-    .space-y-4::-webkit-scrollbar,
-    div[class*="space-y"]::-webkit-scrollbar,
-    div[class*="grid"]::-webkit-scrollbar,
-    .terminal-border div::-webkit-scrollbar,
-    .p-4 div::-webkit-scrollbar,
-    main div::-webkit-scrollbar,
-    section div::-webkit-scrollbar {
-        width: 12px !important;
-        height: 12px !important;
-        display: block !important;
-        visibility: visible !important;
-    }
-
-    /* Tracks dos scrollbars */
-    .directory-content::-webkit-scrollbar-track,
-    .file-list::-webkit-scrollbar-track,
-    .folder-content::-webkit-scrollbar-track,
-    #content-area::-webkit-scrollbar-track,
-    #main-content::-webkit-scrollbar-track,
-    .content-area::-webkit-scrollbar-track,
-    .overflow-y-auto::-webkit-scrollbar-track,
-    .overflow-auto::-webkit-scrollbar-track,
-    details>div::-webkit-scrollbar-track,
-    details[open]>div::-webkit-scrollbar-track,
-    .space-y-2::-webkit-scrollbar-track,
-    .space-y-3::-webkit-scrollbar-track,
-    .space-y-4::-webkit-scrollbar-track,
-    div[class*="space-y"]::-webkit-scrollbar-track,
-    div[class*="grid"]::-webkit-scrollbar-track,
-    .terminal-border div::-webkit-scrollbar-track,
-    .p-4 div::-webkit-scrollbar-track,
-    main div::-webkit-scrollbar-track,
-    section div::-webkit-scrollbar-track {
-        background: #1a1a1a !important;
-        border-radius: 6px !important;
-        border: 2px solid #333 !important;
-        box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3) !important;
-    }
-
-    /* Thumbs dos scrollbars */
-    .directory-content::-webkit-scrollbar-thumb,
-    .file-list::-webkit-scrollbar-thumb,
-    .folder-content::-webkit-scrollbar-thumb,
-    #content-area::-webkit-scrollbar-thumb,
-    #main-content::-webkit-scrollbar-thumb,
-    .content-area::-webkit-scrollbar-thumb,
-    .overflow-y-auto::-webkit-scrollbar-thumb,
-    .overflow-auto::-webkit-scrollbar-thumb,
-    details>div::-webkit-scrollbar-thumb,
-    details[open]>div::-webkit-scrollbar-thumb,
-    .space-y-2::-webkit-scrollbar-thumb,
-    .space-y-3::-webkit-scrollbar-thumb,
-    .space-y-4::-webkit-scrollbar-thumb,
-    div[class*="space-y"]::-webkit-scrollbar-thumb,
-    div[class*="grid"]::-webkit-scrollbar-thumb,
-    .terminal-border div::-webkit-scrollbar-thumb,
-    .p-4 div::-webkit-scrollbar-thumb,
-    main div::-webkit-scrollbar-thumb,
-    section div::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #00ff41, #22c55e) !important;
-        border-radius: 6px !important;
-        border: 2px solid #00cc33 !important;
-        box-shadow: 0 0 10px rgba(0, 255, 65, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-        min-height: 20px !important;
-    }
-
-    /* Hover nos thumbs */
-    .directory-content::-webkit-scrollbar-thumb:hover,
-    .file-list::-webkit-scrollbar-thumb:hover,
-    .folder-content::-webkit-scrollbar-thumb:hover,
-    #content-area::-webkit-scrollbar-thumb:hover,
-    #main-content::-webkit-scrollbar-thumb:hover,
-    .content-area::-webkit-scrollbar-thumb:hover,
-    .overflow-y-auto::-webkit-scrollbar-thumb:hover,
-    .overflow-auto::-webkit-scrollbar-thumb:hover,
-    details>div::-webkit-scrollbar-thumb:hover,
-    details[open]>div::-webkit-scrollbar-thumb:hover,
-    .space-y-2::-webkit-scrollbar-thumb:hover,
-    .space-y-3::-webkit-scrollbar-thumb:hover,
-    .space-y-4::-webkit-scrollbar-thumb:hover,
-    div[class*="space-y"]::-webkit-scrollbar-thumb:hover,
-    div[class*="grid"]::-webkit-scrollbar-thumb:hover,
-    .terminal-border div::-webkit-scrollbar-thumb:hover,
-    .p-4 div::-webkit-scrollbar-thumb:hover,
-    main div::-webkit-scrollbar-thumb:hover,
-    section div::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #33ff6a, #00ff41) !important;
-        box-shadow: 0 0 15px rgba(51, 255, 106, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-        border-color: #33ff6a !important;
-    }
-
-    /* Scrollbar corners */
-    .directory-content::-webkit-scrollbar-corner,
-    .file-list::-webkit-scrollbar-corner,
-    .folder-content::-webkit-scrollbar-corner,
-    #content-area::-webkit-scrollbar-corner,
-    #main-content::-webkit-scrollbar-corner,
-    .content-area::-webkit-scrollbar-corner,
-    .overflow-y-auto::-webkit-scrollbar-corner,
-    .overflow-auto::-webkit-scrollbar-corner,
-    details>div::-webkit-scrollbar-corner,
-    details[open]>div::-webkit-scrollbar-corner,
-    .space-y-2::-webkit-scrollbar-corner,
-    .space-y-3::-webkit-scrollbar-corner,
-    .space-y-4::-webkit-scrollbar-corner,
-    div[class*="space-y"]::-webkit-scrollbar-corner,
-    div[class*="grid"]::-webkit-scrollbar-corner,
-    .terminal-border div::-webkit-scrollbar-corner,
-    .p-4 div::-webkit-scrollbar-corner,
-    main div::-webkit-scrollbar-corner,
-    section div::-webkit-scrollbar-corner {
-        background: #1a1a1a !important;
+    
+    /* Garantir que conteúdo expandido seja sempre visível */
+    details[open] {
+        scroll-margin-bottom: 2rem;
     }
 }

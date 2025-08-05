@@ -548,36 +548,68 @@
         </div>
     </div>
 
-    <!-- Mobile Sidebar Overlay - UPDATED STRUCTURE -->
-    <div id="mobile-sidebar" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
-        <div class="absolute inset-0 bg-black bg-opacity-50" id="mobile-sidebar-backdrop"></div>
-        <div class="relative ml-16 h-full w-80 bg-gray-900 shadow-xl">
-            <!-- Fixed header with close button -->
-            <div class="sidebar-header bg-gray-800 p-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-bold terminal-text-green">Menu ICARUS</h3>
-                    <button id="mobile-sidebar-close" class="text-green-400 hover:text-green-300 p-1 rounded">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+    <!-- Mobile Sidebar Overlay - NOVA ESTRUTURA FULLSCREEN -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-50 hidden md:hidden">
+        <!-- Fixed header with close button -->
+        <div class="sidebar-header">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold terminal-text-green">📡 TERMINAL ICARUS</h3>
+                <button id="mobile-sidebar-close" class="text-red-400 hover:text-red-300 p-1 rounded">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Scrollable content area -->
+        <div class="sidebar-content">
+            <!-- Agent status section - Sempre visível no topo -->
+            <div class="mobile-agent-status">
+                <h4>🔐 STATUS DO AGENTE</h4>
+                <div class="agent-id" id="mobile-menu-agent-id">Agente não identificado</div>
+                <div class="access-level" id="mobile-menu-access-level">Nível de acesso: N/A</div>
+                <div class="text-xs opacity-70">Sistema: Operacional</div>
+            </div>
+            
+            <!-- Main Navigation Section -->
+            <div class="mobile-nav-section">
+                <h5>📁 DIRETÓRIOS PRINCIPAIS</h5>
+                <div class="nav-links">
+                    <nav id="mobile-nav"></nav>
                 </div>
             </div>
             
-            <!-- Scrollable content area -->
-            <div class="sidebar-content">
-                <div class="p-4">
-                    <!-- Navigation with proper spacing -->
-                    <nav id="mobile-nav" class="mb-6 space-y-1"></nav>
-                    
-                    <!-- Context sidebar content with proper spacing -->
-                    <div id="mobile-context-sidebar" class="space-y-2"></div>
-                    
-                    <!-- Extra padding at bottom for better scrolling experience -->
-                    <div class="h-20"></div>
+            <!-- Context Section (Mission/Master Panel) -->
+            <div class="mobile-context-section" id="mobile-context-section-wrapper" style="display: none;">
+                <h5>⚡ CONTEXTO ATIVO</h5>
+                <div class="nav-links">
+                    <div id="mobile-context-sidebar"></div>
+                </div>
+            </div>
+            
+            <!-- System Info Section -->
+            <div class="mobile-nav-section">
+                <h5>🔧 SISTEMA</h5>
+                <div class="nav-links">
+                    <div class="p-4 text-center text-xs">
+                        <div class="terminal-text-green">ICARUS v4.5</div>
+                        <div class="opacity-60 mt-1">Instituto de Contenção e Análise</div>
+                        <div class="opacity-60">de Sujeitos Não-Vinculados à Realidade</div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Footer with close button -->
+        <div class="mobile-menu-footer">
+            <button class="close-menu-btn" id="mobile-menu-close-footer">
+                ✕ FECHAR TERMINAL
+            </button>
+        </div>
+        
+        <!-- Floating close button (alternative) -->
+        <button id="mobile-close-btn" class="mobile-close-btn">✕</button>
     </div>
 
     <!-- Scripts -->
