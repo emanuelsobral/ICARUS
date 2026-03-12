@@ -4,16 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Terminal de Acesso ICARUS — Institute for Containment and Analysis of Reality-Unbound Subjects. Sistema de RPG de mesa.">
+    <meta name="theme-color" content="#00ff41">
     <title>TERMINAL DE ACESSO ICARUS</title>
     <link rel="icon" type="image/png" href="IMG/ICON.png">
-    
+
     <!-- TailwindCSS e Fontes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Sua Folha de Estilos CSS -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+
+    <!-- Folha de Estilos CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -21,41 +26,89 @@
 
     <!-- Tela de Login Inicial -->
     <div id="login-screen" class="h-screen flex flex-col justify-center items-center px-4 overflow-hidden">
-        <div class="w-full max-w-md text-center flex flex-col justify-center">
-            <img src="IMG/LOGO.png" alt="ICARUS Logo" class="mx-auto mb-4 max-w-xs w-full h-auto" style="image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: crisp-edges; filter: contrast(1.4) brightness(0.9) saturate(1.2); transform: scale(1.02); image-rendering: -ms-interpolation-mode: nearest-neighbor;">
-            <pre class="whitespace-pre-wrap text-xs sm:text-sm md:text-base">
- ___   _____   _____   _____   _   _   _____ 
-|_ _| /  ___| /  _  \ |  _  \ | | | | /  ___|
- | |  | |     | |_| | | |_| | | | | | | |___ 
- | |  | |     |  _  | |  _  / | |_| |  \__  |
-|___| \_____| |_| |_| |_| \_\  \___/   |___/ 
+        <!-- Decorative corner elements -->
+        <div
+            style="position:absolute;top:16px;left:16px;width:40px;height:40px;border-top:2px solid rgba(0,255,136,0.4);border-left:2px solid rgba(0,255,136,0.4);pointer-events:none">
+        </div>
+        <div
+            style="position:absolute;top:16px;right:16px;width:40px;height:40px;border-top:2px solid rgba(0,255,136,0.4);border-right:2px solid rgba(0,255,136,0.4);pointer-events:none">
+        </div>
+        <div
+            style="position:absolute;bottom:16px;left:16px;width:40px;height:40px;border-bottom:2px solid rgba(0,255,136,0.4);border-left:2px solid rgba(0,255,136,0.4);pointer-events:none">
+        </div>
+        <div
+            style="position:absolute;bottom:16px;right:16px;width:40px;height:40px;border-bottom:2px solid rgba(0,255,136,0.4);border-right:2px solid rgba(0,255,136,0.4);pointer-events:none">
+        </div>
+
+        <div class="w-full max-w-sm text-center flex flex-col justify-center" style="animation: fadeIn 0.6s ease">
+            <!-- Logo -->
+            <img src="IMG/LOGO.png" alt="ICARUS Logo" class="mx-auto mb-3 w-full h-auto"
+                style="max-width:220px;image-rendering:pixelated;filter:contrast(1.3) brightness(1.0) saturate(1.3) drop-shadow(0 0 20px rgba(0,255,136,0.4));">
+
+            <!-- ASCII art -->
+            <pre class="whitespace-pre-wrap text-xs"
+                style="opacity:0.6;line-height:1.4;text-shadow:0 0 8px rgba(0,255,136,0.4)">
+ ___  ___  ___  ____  _   _  ___
+|_ _|/ __||   \|  _ \| | | |/ __|
+ | || (__ | |) || |_) | |_| |\__ \
+|___|\___||___/ |____/ \___/ |___/
             </pre>
-            <p class="mt-4 text-xs sm:text-sm">Institute for Containment and Analysis of Reality-Unbound Subjects</p>
-            <p class="mt-8 terminal-text-red animate-pulse text-xs sm:text-sm">AVISO: ACESSO RESTRITO. ATIVIDADE
-                MONITORADA.</p>
-            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
-                <label for="agent-id-input" class="text-xs sm:text-sm sm:mr-2">&gt; INSIRA ID DE AGENTE:</label>
-                <div class="flex items-center">
-                    <span class="w-2 h-5 bg-green-400 cursor ml-1"></span>
-                    <input id="agent-id-input" type="password"
-                        class="bg-transparent border-none focus:ring-0 w-32 sm:w-24 text-center sm:text-left text-sm"
-                        autofocus>
-                </div>
+
+            <!-- Subtitle -->
+            <p style="font-size:0.6rem;letter-spacing:0.18em;opacity:0.55;margin-top:4px;margin-bottom:20px;">INSTITUTE
+                FOR CONTAINMENT AND ANALYSIS OF REALITY-UNBOUND SUBJECTS</p>
+
+            <!-- Divider -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;opacity:0.4">
+                <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,136,0.6))"></div>
+                <span style="font-size:0.6rem;letter-spacing:0.2em">⬡</span>
+                <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,255,136,0.6),transparent)"></div>
             </div>
-            <p id="login-status" class="mt-4 h-5 text-xs sm:text-sm"></p>
+
+            <!-- Login Card -->
+            <div
+                style="background:linear-gradient(135deg,rgba(0,255,136,0.04) 0%,rgba(0,238,255,0.02) 100%);border:1px solid rgba(0,255,136,0.25);border-radius:6px;padding:24px 20px;box-shadow:0 0 30px rgba(0,0,0,0.6),inset 0 1px 0 rgba(0,255,136,0.08);position:relative;overflow:hidden;">
+                <!-- Card top line -->
+                <div
+                    style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,136,0.5),rgba(0,238,255,0.3),transparent)">
+                </div>
+
+                <p class="terminal-text-red animate-pulse"
+                    style="font-size:0.65rem;letter-spacing:0.15em;margin-bottom:16px;">⚠ ACESSO RESTRITO — ATIVIDADE
+                    MONITORADA</p>
+
+                <!-- Input area -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                    <label for="agent-id-input" style="font-size:0.65rem;letter-spacing:0.2em;opacity:0.7;">&gt;
+                        IDENTIFICADOR DE AGENTE</label>
+                    <div class="flex items-center justify-center w-full" style="gap:6px;">
+                        <span class="cursor" style="width:8px;height:20px;background:rgba(0,255,136,0.8);"></span>
+                        <input id="agent-id-input" type="password"
+                            style="background:transparent;border:none;border-bottom:1px solid rgba(0,255,136,0.5);padding:4px 8px;font-size:0.9rem;letter-spacing:0.15em;text-align:center;width:160px;color:inherit;font-family:inherit;"
+                            autofocus autocomplete="off">
+                    </div>
+                </div>
+
+                <p id="login-status" class="mt-4 text-xs" style="min-height:20px;letter-spacing:0.05em;"></p>
+            </div>
+
+            <!-- Footer -->
+            <p style="font-size:0.55rem;letter-spacing:0.12em;opacity:0.3;margin-top:16px;">TERMINAL ICARUS v4.5 //
+                ENCRYPTED CONNECTION // CLASSIFIED</p>
         </div>
     </div>
 
     <!-- Tela de Registro de Novo Agente -->
     <div id="welcome-screen" class="hidden h-screen flex flex-col justify-center items-center text-center px-4">
-        <img src="IMG/LOGO.png" alt="ICARUS Logo" class="mx-auto mb-6 max-w-48 w-full h-auto" style="image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: crisp-edges; filter: contrast(1.4) brightness(0.9) saturate(1.2); transform: scale(1.02); image-rendering: -ms-interpolation-mode: nearest-neighbor;">
+        <img src="IMG/LOGO.png" alt="ICARUS Logo" class="mx-auto mb-6 max-w-48 w-full h-auto"
+            style="image-rendering: pixelated; filter: contrast(1.4) brightness(0.9) saturate(1.2); transform: scale(1.02);">
         <h1 class="text-xl sm:text-2xl font-bold terminal-text-amber mb-4">RECRUTAMENTO CONCLUÍDO</h1>
         <p class="max-w-lg text-sm sm:text-base">Parabéns, Agente. Sua avaliação foi satisfatória e você foi
             oficialmente integrado à ICARUS.
             Seu ID foi registrado em nosso sistema.</p>
         <p class="max-w-lg mt-2 text-sm sm:text-base">Para concluir seu dossiê, por favor, preencha os dados de registro
             abaixo.</p>
-        
+
         <div class="mt-8 space-y-4 w-full max-w-md">
             <div class="flex flex-col items-center gap-2">
                 <label for="agent-name-input" class="text-xs sm:text-sm">&gt; NOME DO AGENTE:</label>
@@ -65,7 +118,7 @@
                         class="bg-transparent border-none focus:ring-0 w-48 text-center text-sm">
                 </div>
             </div>
-            
+
             <div class="flex flex-col items-center gap-2">
                 <label for="player-name-input" class="text-xs sm:text-sm">&gt; NOME DO JOGADOR:</label>
                 <div class="flex items-center w-full justify-center">
@@ -74,9 +127,9 @@
                         class="bg-transparent border-none focus:ring-0 w-48 text-center text-sm">
                 </div>
             </div>
-            
+
             <div class="mt-6">
-                <button id="complete-registration-btn" 
+                <button id="complete-registration-btn"
                     class="btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md border-2 border-green-400 shadow-lg transition-all duration-200">
                     CONCLUIR REGISTRO
                 </button>
@@ -87,31 +140,46 @@
 
     <!-- Conteúdo Principal do Site -->
     <div id="main-content" class="hidden">
-        <header class="terminal-border p-3 mb-4 flex justify-between items-center text-xs sm:text-sm mobile-header">
-            <div class="text-left">
-                <div class="font-bold terminal-text-green">TERMINAL ICARUS v4.5</div>
-                <div class="text-xs opacity-80">STATUS: CONECTADO</div>
+        <header class="terminal-border mb-3 flex justify-between items-center text-xs sm:text-sm mobile-header"
+            style="padding:10px 14px;">
+            <!-- Left: System info -->
+            <div class="text-left" style="min-width:120px;">
+                <div class="font-bold"
+                    style="font-size:0.7rem;letter-spacing:0.12em;color:#00ff88;text-shadow:0 0 8px rgba(0,255,136,0.6);">
+                    ICARUS <span style="opacity:0.6">v4.5</span></div>
+                <div
+                    style="font-size:0.6rem;letter-spacing:0.1em;opacity:0.55;margin-top:2px;display:flex;align-items:center;gap:4px;">
+                    <span
+                        style="width:5px;height:5px;border-radius:50%;background:#00ff88;box-shadow:0 0 6px #00ff88;display:inline-block;animation:blink 1.5s ease-in-out infinite;"></span>
+                    ONLINE
+                </div>
             </div>
+            <!-- Center: Agent info -->
             <div id="agent-info" class="text-center hidden sm:block flex-1 mx-4 min-w-0">
-                <div class="font-bold terminal-text-amber text-sm leading-tight" id="agent-id-display"></div>
-                <div id="access-level-display" class="text-xs mt-1 opacity-90"></div>
+                <div class="font-bold terminal-text-amber leading-tight" id="agent-id-display"
+                    style="font-size:0.8rem;letter-spacing:0.08em;"></div>
+                <div id="access-level-display" style="font-size:0.6rem;letter-spacing:0.15em;margin-top:3px;"></div>
             </div>
-            <div class="flex items-center justify-center">
-                <button id="logout-btn"
-                    class="terminal-text-red hover:bg-red-900/30 px-3 py-2 rounded border border-red-500 text-xs transition-all duration-200 font-bold">[DESCONECTAR]</button>
+            <!-- Right: Logout -->
+            <div class="flex items-center justify-end" style="min-width:100px;">
+                <button id="logout-btn">[DESCONECTAR]</button>
             </div>
         </header>
 
-        <!-- Mobile Agent Info (shown on mobile when header agent info is hidden) -->
-        <div id="mobile-agent-info" class="block sm:hidden terminal-border p-3 mb-4 text-center text-xs">
-            <div class="font-bold terminal-text-amber text-sm leading-tight" id="mobile-agent-id-display"></div>
-            <div id="mobile-access-level-display" class="text-xs mt-1 opacity-80"></div>
+        <!-- Mobile Agent Info -->
+        <div id="mobile-agent-info" class="block sm:hidden mb-3"
+            style="background:linear-gradient(135deg,#040e0a,#060c10);border:1px solid rgba(0,255,136,0.25);border-radius:3px;padding:10px 14px;text-align:center;">
+            <div id="mobile-agent-id-display" class="font-bold terminal-text-amber"
+                style="font-size:0.8rem;letter-spacing:0.08em;"></div>
+            <div id="mobile-access-level-display"
+                style="font-size:0.6rem;letter-spacing:0.15em;margin-top:3px;opacity:0.8;"></div>
         </div>
 
         <div class="flex flex-col md:flex-row gap-4">
             <!-- Mobile Navigation Toggle -->
-            <button id="mobile-nav-toggle" class="mobile-nav-toggle md:hidden">
-                📁 ABRIR DIRETÓRIOS
+            <button id="mobile-nav-toggle" class="mobile-nav-toggle md:hidden flex items-center gap-2 justify-center">
+                <span class="text-base">≡</span>
+                <span class="text-xs tracking-widest">DIRETÓRIOS</span>
             </button>
 
             <!-- Mobile Sidebar Backdrop -->
@@ -164,7 +232,8 @@
 
             <div class="mb-4">
                 <label for="item-level-input" class="block text-sm font-bold mb-2">Nível:</label>
-                <input type="number" id="item-level-input" class="modal-input" placeholder="1" min="1" max="20" value="1">
+                <input type="number" id="item-level-input" class="modal-input" placeholder="1" min="1" max="20"
+                    value="1">
             </div>
 
             <div class="mb-4">
@@ -174,7 +243,8 @@
 
             <div id="item-special-fields" class="mb-4 hidden">
                 <div id="weapon-damage-field" class="mb-3 hidden">
-                    <label for="item-damage-input" class="block text-sm font-bold mb-2">Dano (apenas para armas):</label>
+                    <label for="item-damage-input" class="block text-sm font-bold mb-2">Dano (apenas para
+                        armas):</label>
                     <input type="text" id="item-damage-input" class="modal-input" placeholder="1d6" value="1d6">
                 </div>
                 <div id="armor-ac-field" class="mb-3 hidden">
@@ -197,7 +267,8 @@
 
             <div class="mb-4">
                 <label for="ability-name-input" class="block text-sm font-bold mb-2">Nome da Habilidade/Magia:</label>
-                <input type="text" id="ability-name-input" class="modal-input" placeholder="Digite o nome..." maxlength="50">
+                <input type="text" id="ability-name-input" class="modal-input" placeholder="Digite o nome..."
+                    maxlength="50">
             </div>
 
             <div class="mb-4">
@@ -211,12 +282,14 @@
 
             <div class="mb-4">
                 <label for="ability-level-input" class="block text-sm font-bold mb-2">Nível:</label>
-                <input type="number" id="ability-level-input" class="modal-input" placeholder="1" min="1" max="20" value="1">
+                <input type="number" id="ability-level-input" class="modal-input" placeholder="1" min="1" max="20"
+                    value="1">
             </div>
 
             <div class="mb-4">
                 <label for="ability-info-input" class="block text-sm font-bold mb-2">Informações:</label>
-                <textarea id="ability-info-input" class="modal-input h-20" placeholder="Descrição da habilidade/magia..."></textarea>
+                <textarea id="ability-info-input" class="modal-input h-20"
+                    placeholder="Descrição da habilidade/magia..."></textarea>
             </div>
 
             <div class="grid grid-cols-3 gap-3 mb-6">
@@ -236,7 +309,8 @@
 
             <div class="flex justify-end">
                 <button id="ability-modal-cancel-btn" class="modal-btn cancel">Cancelar</button>
-                <button id="ability-modal-add-btn" class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">Adicionar</button>
+                <button id="ability-modal-add-btn"
+                    class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">Adicionar</button>
             </div>
         </div>
     </div>
@@ -361,8 +435,10 @@
 
             <div class="flex justify-end gap-3">
                 <button id="item-action-cancel-btn" class="modal-btn cancel">Cancelar</button>
-                <button id="item-action-equip-btn" class="modal-btn bg-green-600 hover:bg-green-700 border-green-500">⚔️ Equipar</button>
-                <button id="item-action-edit-btn" class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">📝 Editar ou Excluir</button>
+                <button id="item-action-equip-btn" class="modal-btn bg-green-600 hover:bg-green-700 border-green-500">⚔️
+                    Equipar</button>
+                <button id="item-action-edit-btn" class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">📝
+                    Editar ou Excluir</button>
             </div>
         </div>
     </div>
@@ -378,8 +454,10 @@
 
             <div class="flex justify-end gap-3">
                 <button id="edit-inventory-cancel-btn" class="modal-btn cancel">Cancelar</button>
-                <button id="edit-inventory-save-btn" class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">Salvar</button>
-                <button id="edit-inventory-delete-btn" class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Excluir</button>
+                <button id="edit-inventory-save-btn"
+                    class="modal-btn bg-blue-600 hover:bg-blue-700 border-blue-500">Salvar</button>
+                <button id="edit-inventory-delete-btn"
+                    class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Excluir</button>
             </div>
         </div>
     </div>
@@ -391,9 +469,6 @@
 
             <div id="item-details-content" class="mb-6">
                 <!-- Content will be populated by JavaScript -->
-            </div>
-        </div>
-    </div>
             </div>
         </div>
     </div>
@@ -420,8 +495,10 @@
 
             <div class="flex justify-end gap-3">
                 <button id="edit-ability-cancel-btn" class="modal-btn cancel">Cancelar</button>
-                <button id="edit-ability-save-btn" class="modal-btn bg-purple-600 hover:bg-purple-700 border-purple-500">Salvar</button>
-                <button id="edit-ability-delete-btn" class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Excluir</button>
+                <button id="edit-ability-save-btn"
+                    class="modal-btn bg-purple-600 hover:bg-purple-700 border-purple-500">Salvar</button>
+                <button id="edit-ability-delete-btn"
+                    class="modal-btn bg-red-600 hover:bg-red-700 border-red-500">Excluir</button>
             </div>
         </div>
     </div>
@@ -556,12 +633,13 @@
                 <h3 class="text-lg font-bold terminal-text-green">📡 TERMINAL ICARUS</h3>
                 <button id="mobile-sidebar-close" class="text-red-400 hover:text-red-300 p-1 rounded">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
         </div>
-        
+
         <!-- Scrollable content area -->
         <div class="sidebar-content">
             <!-- Agent status section - Sempre visível no topo -->
@@ -571,7 +649,7 @@
                 <div class="access-level" id="mobile-menu-access-level">Nível de acesso: N/A</div>
                 <div class="text-xs opacity-70">Sistema: Operacional</div>
             </div>
-            
+
             <!-- Main Navigation Section -->
             <div class="mobile-nav-section">
                 <h5>📁 DIRETÓRIOS PRINCIPAIS</h5>
@@ -579,7 +657,7 @@
                     <nav id="mobile-nav"></nav>
                 </div>
             </div>
-            
+
             <!-- Context Section (Mission/Master Panel) -->
             <div class="mobile-context-section" id="mobile-context-section-wrapper" style="display: none;">
                 <h5>⚡ CONTEXTO ATIVO</h5>
@@ -587,7 +665,7 @@
                     <div id="mobile-context-sidebar"></div>
                 </div>
             </div>
-            
+
             <!-- System Info Section -->
             <div class="mobile-nav-section">
                 <h5>🔧 SISTEMA</h5>
@@ -600,20 +678,20 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Footer with close button -->
         <div class="mobile-menu-footer">
             <button class="close-menu-btn" id="mobile-menu-close-footer">
                 ✕ FECHAR TERMINAL
             </button>
         </div>
-        
+
         <!-- Floating close button (alternative) -->
         <button id="mobile-close-btn" class="mobile-close-btn">✕</button>
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="firebase-config.js"></script>
+    <!-- firebase-config.js não é necessário: script.js já inicializa o Firebase internamente -->
     <script type="module" src="script.js"></script>
 </body>
 

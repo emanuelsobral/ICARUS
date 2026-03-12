@@ -4788,8 +4788,13 @@
                     const agentData = doc.data();
                     currentAgentData = agentData; // Atualizar variável global
 
-                    // Update agent info
-                    updateAgentInfo(agentData);
+                    // Update agent info - só atualiza se não estiver em modo mestre
+                    // (evita sobrescrever o header "NÍVEL DE ACESSO: TOTAL" com dados do agente)
+                    if (!isMaster) {
+                        updateAgentInfo(agentData);
+                    } else {
+                        updateMasterInfo(); // Garantir que o header do master está correto
+                    }
 
                     // Only do initial setup on first load
                     if (isFirstLoad) {
